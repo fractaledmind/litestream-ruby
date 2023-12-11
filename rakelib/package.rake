@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #  Rake tasks to manage native gem packages with binary executables from benbjohnson/litestream
 #
@@ -93,7 +92,7 @@ Litestream::Upstream::NATIVE_PLATFORMS.each do |platform, filename|
       warn "Downloading #{exepath} from #{release_url} ..."
 
       # lazy, but fine for now.
-      URI.open(release_url) do |remote|
+      URI.open(release_url) do |remote| # standard:disable Security/Open
         if release_url.end_with?(".zip")
           Zip::File.open_buffer(remote) do |zip_file|
             zip_file.extract("litestream", exepath)
@@ -102,15 +101,13 @@ Litestream::Upstream::NATIVE_PLATFORMS.each do |platform, filename|
           Zlib::GzipReader.wrap(remote) do |gz|
             Gem::Package::TarReader.new(gz) do |reader|
               reader.seek("litestream") do |file|
-                File.open(exepath, "wb") do |local|
-                  local.write(file.read)
-                end
+                File.binwrite(exepath, file.read)
               end
             end
           end
         end
       end
-      FileUtils.chmod(0755, exepath, verbose: true)
+      FileUtils.chmod(0o755, exepath, verbose: true)
     end
   end
 end

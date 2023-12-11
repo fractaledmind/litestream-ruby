@@ -8,6 +8,6 @@ begin
   puts command.inspect
   exec(*command)
 rescue Litestream::Commands::UnsupportedPlatformException, Litestream::Commands::ExecutableNotFoundException => e
-  STDERR.puts("ERROR: " + e.message)
+  warn("ERROR: " + e.message)
   exit 1
 end
