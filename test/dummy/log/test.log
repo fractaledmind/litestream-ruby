@@ -200,3 +200,9 @@ LitestreamGeneratorTest: test_should_generate_a_Litestream_configuration_file
 LitestreamGeneratorTest: test_should_generate_a_Litestream_configuration_file
 -----------------------------------------------------------------------------
   [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mrollback transaction[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mbegin transaction[0m
+-----------------------------------------------------------------------------
+LitestreamGeneratorTest: test_should_generate_a_Litestream_configuration_file
+-----------------------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mrollback transaction[0m
