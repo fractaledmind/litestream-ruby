@@ -21,8 +21,20 @@ class LitestreamGeneratorTest < Rails::Generators::TestCase
     assert_file "config/litestream.yml" do |content|
       assert_match "path: $LITESTREAM_DATABASE_PATH", content
       assert_match "url: $LITESTREAM_REPLICA_URL", content
-      assert_match "access-key-id: $LITESTREAM_REPLICA_KEY_ID", content
-      assert_match "secret-access-key: $LITESTREAM_REPLICA_ACCESS_KEY", content
+      assert_match "access-key-id: $LITESTREAM_ACCESS_KEY_ID", content
+      assert_match "secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY", content
+    end
+
+    assert_file "config/initializers/litestream.rb" do |content|
+      assert_match "config.database_path = ActiveRecord::Base.connection_db_config.database", content
+      assert_match "config.replica_url = litestream_credentials.replica_url", content
+      assert_match "config.replica_key_id = litestream_credentials.replica_key_id", content
+      assert_match "config.replica_access_key = litestream_credentials.replica_access_key", content
+    end
+
+    assert_file "Procfile" do |content|
+      assert_match "rails: bundle exec rails server --port $PORT", content
+      assert_match "litestream: bin/rails litestream:replicate", content
     end
   end
 end

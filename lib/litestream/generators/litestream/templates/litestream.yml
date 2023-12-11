@@ -2,5 +2,5 @@ dbs:
   - path: $LITESTREAM_DATABASE_PATH
     replicas:
       - url: $LITESTREAM_REPLICA_URL
-        access-key-id: $LITESTREAM_REPLICA_KEY_ID
-        secret-access-key: $LITESTREAM_REPLICA_ACCESS_KEY
+        access-key-id: $LITESTREAM_ACCESS_KEY_ID
+        secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
