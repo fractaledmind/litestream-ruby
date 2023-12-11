@@ -11,6 +11,10 @@ module Litestream
         template "litestream.yml", "config/litestream.yml"
       end
 
+      def copy_initializer_file
+        template "litestream.rb", "config/initializers/litestream.rb"
+      end
+
       def create_or_update_procfile
         if File.exist?("Procfile")
           append_to_file "Procfile", "litestream: bin/rails litestream:replicate"
