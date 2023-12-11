@@ -1,0 +1,13 @@
+#! /usr/bin/env ruby
+# because rubygems shims assume a gem's executables are Ruby
+
+require "litestream/commands"
+
+begin
+  command = [Litestream::Commands.executable, *ARGV]
+  puts command.inspect
+  exec(*command)
+rescue Litestream::Commands::UnsupportedPlatformException, Litestream::Commands::ExecutableNotFoundException => e
+  STDERR.puts("ERROR: " + e.message)
+  exit 1
+end
