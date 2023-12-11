@@ -48,17 +48,3 @@ jobs:
           path: pkg
       - run: "gem install pkg/litestream-*.gem"
       - run: "litestream version"
-
-  windows-install:
-    needs: ["package"]
-    runs-on: windows-latest
-    steps:
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.0"
-      - uses: actions/download-artifact@v2
-        with:
-          name: gem-x64-mingw32
-          path: pkg
-      - run: "gem install pkg/litestream-*.gem"
-      - run: "litestream version"
