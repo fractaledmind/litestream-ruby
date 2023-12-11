@@ -7,3 +7,4 @@
 /spec/reports/
 /tmp/
 /exe/*/litestream
+test/dummy/log/test.log
