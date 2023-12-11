@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "litestream/version"
-
 module Litestream
-  class Error < StandardError; end
-  # Your code goes here...
 end
+
+require_relative "litestream/version"
+require_relative "litestream/upstream"
+require_relative "litestream/commands"
