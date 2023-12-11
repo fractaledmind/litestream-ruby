@@ -82,6 +82,37 @@ Again, however, you can take full manual control over the replication process an
 
 The full set of commands available to the `litestream` executable are covered in Litestream's [command reference](https://litestream.io/reference/). Currently, only the `replicate` command is provided as a rake task by the gem.
 
+### Using in development
+
+By default, installing the gem does not update your `Procfile.dev` file, and so Litestream will not be started in development. If you would like to test that your configuration is properly setup, you can manually add the `litestream:replicate` rake task to your `Procfile.dev` file. Just copy the `litestream` definition from the production `Procfile`. Then, in order to have a replication bucket for Litestream to point to, you can use a Docker instance of [MinIO](https://min.io/). MinIO is an S3-compatible object storage server that can be run locally. You can run a MinIO server with the following command:
+
+```sh
+docker run -p 9000:9000 -p 9001:9001 minio/minio server /data --console-address ":9001"
+```
+
+This gets us up and running quickly but it will only persist the data for as long as the Docker container is running, which is fine for local development testing.
+
+To simplify local development, you can add this command to your `Procfile.dev` file as well. This would allow you to start a MinIO server and a Litestream replication process in your local development environment with the single `bin/dev` command.
+
+Once you have a MinIO server running, you can create a bucket for Litestream to use. You can do this by visiting the MinIO console at [http://localhost:9001](http://localhost:9001) and logging in with the default credentials of `minioadmin` and `minioadmin`. Once logged in, you can create a bucket named `mybkt` by clicking the `+` button in the bottom right corner of the screen. You can then use the following configuration in your `config/initializers/litestream.rb` file:
+
+```ruby
+Litestream.configure do |config|
+  config.database_path = ActiveRecord::Base.connection_db_config.database
+  config.replica_url = "s3://mybkt.localhost:9000/"
+  config.replica_key_id = "minioadmin"
+  config.replica_access_key = "minioadmin"
+end
+```
+
+With Litestream properly configured and the MinIO server and Litestream replication process running, you should see something like the following in your terminal logs when you start the `bin/dev` process:
+
+```sh
+litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg=litestream version=v0.3.xx
+litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg="initialized db" path=/path/to/your/app/storage/development.sqlite3
+litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg="replicating to" name=s3 type=s3 sync-interval=1s bucket=mybkt path="" region=us-east-1 endpoint=http://localhost:9000
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
