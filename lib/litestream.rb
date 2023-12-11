@@ -6,3 +6,4 @@ end
 require_relative "litestream/version"
 require_relative "litestream/upstream"
 require_relative "litestream/commands"
+require_relative "litestream/railtie" if defined?(::Rails::Railtie)
