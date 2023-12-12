@@ -108,9 +108,9 @@ end
 With Litestream properly configured and the MinIO server and Litestream replication process running, you should see something like the following in your terminal logs when you start the `bin/dev` process:
 
 ```sh
-litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg=litestream version=v0.3.xx
-litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg="initialized db" path=/path/to/your/app/storage/development.sqlite3
-litestream.1 | time=YYYY-MM-DDTHH:MM:SS level=INFO msg="replicating to" name=s3 type=s3 sync-interval=1s bucket=mybkt path="" region=us-east-1 endpoint=http://localhost:9000
+time=YYYY-MM-DDTHH:MM:SS level=INFO msg=litestream version=v0.3.xx
+time=YYYY-MM-DDTHH:MM:SS level=INFO msg="initialized db" path=/path/to/your/app/storage/development.sqlite3
+time=YYYY-MM-DDTHH:MM:SS level=INFO msg="replicating to" name=s3 type=s3 sync-interval=1s bucket=mybkt path="" region=us-east-1 endpoint=http://localhost:9000
 ```
 
 ## Development
