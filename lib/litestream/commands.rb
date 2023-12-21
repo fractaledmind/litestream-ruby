@@ -73,12 +73,12 @@ module Litestream
     end
 
     def self.replicate
-      return if Litestream.configuration.nil?
-
-      ENV["LITESTREAM_DATABASE_PATH"] = Litestream.configuration.database_path
-      ENV["LITESTREAM_REPLICA_URL"] = Litestream.configuration.replica_url
-      ENV["LITESTREAM_ACCESS_KEY_ID"] = Litestream.configuration.replica_key_id
-      ENV["LITESTREAM_SECRET_ACCESS_KEY"] = Litestream.configuration.replica_access_key
+      if Litestream.configuration
+        ENV["LITESTREAM_DATABASE_PATH"] = Litestream.configuration.database_path
+        ENV["LITESTREAM_REPLICA_URL"] = Litestream.configuration.replica_url
+        ENV["LITESTREAM_ACCESS_KEY_ID"] = Litestream.configuration.replica_key_id
+        ENV["LITESTREAM_SECRET_ACCESS_KEY"] = Litestream.configuration.replica_access_key
+      end
 
       system(executable, "replicate", "--config", Rails.root.join("config", "litestream.yml").to_s)
     end
