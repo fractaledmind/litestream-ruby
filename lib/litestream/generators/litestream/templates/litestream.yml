@@ -1,3 +1,7 @@
+# This is the actual configuration file for litestream.
+# Edit this file as needed to configure your needs for litestream repication.
+#
+# For more details, see: https://litestream.io/reference/config/
 dbs:
   - path: $LITESTREAM_DATABASE_PATH
     replicas:
