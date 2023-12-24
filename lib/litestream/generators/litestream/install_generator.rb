@@ -8,11 +8,11 @@ module Litestream
       source_root File.expand_path("templates", __dir__)
 
       def copy_config_file
-        template "litestream.yml", "config/litestream.yml"
+        template "config.yml", "config/litestream.yml"
       end
 
       def copy_initializer_file
-        template "litestream.rb", "config/initializers/litestream.rb"
+        template "initializer.rb", "config/initializers/litestream.rb"
       end
 
       def create_or_update_procfile
