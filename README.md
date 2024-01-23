@@ -76,7 +76,13 @@ However, if you need manual control over the Litestream configuration, you can m
 
 ### Replication
 
-By default, the gem will create or append to a `Procfile` to start the Litestream process via the gem's provided `litestream:replicate` rake task. This rake task will automatically load the configuration file and set the environment variables before starting the Litestream process.
+By default, the gem will create or append to a `Procfile` to start the Litestream process via the gem's provided `litestream:replicate` rake task. This rake task will automatically load the configuration file and set the environment variables before starting the Litestream process. You can also execute this rake task yourself:
+
+```shell
+bin/rails litestream:replicate
+# or
+bundle exec rake litestream:replicate
+```
 
 If you need to pass arguments through the rake task to the underlying `litestream` command, that can be done with argument forwarding:
 
