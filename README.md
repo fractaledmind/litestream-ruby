@@ -76,9 +76,23 @@ However, if you need manual control over the Litestream configuration, you can m
 
 ### Replication
 
-By default, the gem will create or append to a `Procfile` to start the Litestream process via the gem's provided `litestream:replicate` rake task. This rake task will automatically load the configuration file and set the environment variables before starting the Litestream process.
+By default, the gem will create or append to a `Procfile` to start the Litestream process via the gem's provided `litestream:replicate` rake task. This rake task will automatically load the configuration file and set the environment variables before starting the Litestream process. You can also execute this rake task yourself:
 
-Again, however, you can take full manual control over the replication process and simply run the `litestream replicate --config config/litestream.yml` command to start the Litestream process. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
+```shell
+bin/rails litestream:replicate
+# or
+bundle exec rake litestream:replicate
+```
+
+If you need to pass arguments through the rake task to the underlying `litestream` command, that can be done with argument forwarding:
+
+```shell
+bin/rails litestream:replicate -- -exec "foreman start"
+```
+
+This example utilizes the `-exec` option available on [the `replicate` command](https://litestream.io/reference/replicate/) which provides basic process management, since Litestream will exit when the child process exits. In this example, we only launch our collection of Rails application processes (like Rails and SolidQueue, for example) after the Litestream replication process is ready.
+
+The rake task is the recommended way to interact with the Litestream replication process in your Rails application or Ruby project. But, you _can_ take full manual control over the replication process and simply run the `litestream replicate --config config/litestream.yml` command to start the Litestream process. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
 
 The full set of commands available to the `litestream` executable are covered in Litestream's [command reference](https://litestream.io/reference/). Currently, only the `replicate` command is provided as a rake task by the gem.
 

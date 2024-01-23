@@ -14,8 +14,15 @@ namespace :litestream do
     true
   end
 
-  desc ""
+  desc "Start a process to monitor and continuously replicate the SQLite databases defined in your configuration file"
   task replicate: :environment do
-    Litestream::Commands.replicate
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.replicate(options)
   end
 end

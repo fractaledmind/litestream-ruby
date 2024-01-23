@@ -72,7 +72,7 @@ module Litestream
       exe_file
     end
 
-    def self.replicate
+    def self.replicate(argv = {})
       if Litestream.configuration
         ENV["LITESTREAM_DATABASE_PATH"] = Litestream.configuration.database_path
         ENV["LITESTREAM_REPLICA_URL"] = Litestream.configuration.replica_url
@@ -80,7 +80,13 @@ module Litestream
         ENV["LITESTREAM_SECRET_ACCESS_KEY"] = Litestream.configuration.replica_access_key
       end
 
-      system(executable, "replicate", "--config", Rails.root.join("config", "litestream.yml").to_s)
+      args = {
+        "--config" => Rails.root.join("config", "litestream.yml").to_s
+      }.merge(argv).to_a.flatten.compact
+
+      command = [executable, "replicate", *args]
+      puts command.inspect
+      system(*command)
     end
   end
 end
