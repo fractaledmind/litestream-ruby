@@ -1,9 +1,7 @@
-# test/tasks/rake_task_file_test.rb
-
 require "test_helper"
 require "rake"
 
-class RakeTaskFileTaskTest < ActiveSupport::TestCase
+class TestLitestreamTasks < ActiveSupport::TestCase
   def setup
     Rake.application.rake_require "tasks/litestream_tasks"
     Rake::Task.define_task(:environment)
