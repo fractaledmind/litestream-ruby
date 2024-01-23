@@ -1,7 +1,7 @@
 # test/tasks/rake_task_file_test.rb
 
-require 'test_helper'
-require 'rake'
+require "test_helper"
+require "rake"
 
 class RakeTaskFileTaskTest < ActiveSupport::TestCase
   def setup
@@ -50,7 +50,7 @@ class RakeTaskFileTaskTest < ActiveSupport::TestCase
   def test_replicate_task_with_arguments
     ARGV.replace ["--", "--no-expand-env"]
     fake = Minitest::Mock.new
-    fake.expect :call, nil, [{"--no-expand-env"=>nil}]
+    fake.expect :call, nil, [{"--no-expand-env" => nil}]
     Litestream::Commands.stub :replicate, fake do
       Rake.application.invoke_task "litestream:replicate"
     end
