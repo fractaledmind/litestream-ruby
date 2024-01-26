@@ -19,6 +19,9 @@ class LitestreamGeneratorTest < Rails::Generators::TestCase
     run_generator
 
     assert_file "config/litestream.yml" do |content|
+      assert_match "- path: storage/test.sqlite3", content
+      assert_match "- path: storage/queue.sqlite3", content
+      assert_match "- path: storage/errors.sqlite3", content
       assert_match "bucket: $LITESTREAM_REPLICA_BUCKET", content
       assert_match "access-key-id: $LITESTREAM_ACCESS_KEY_ID", content
       assert_match "secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY", content
