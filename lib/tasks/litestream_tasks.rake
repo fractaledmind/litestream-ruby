@@ -7,7 +7,7 @@ namespace :litestream do
     end
 
     puts "LITESTREAM_DATABASE_PATH=#{Litestream.configuration.database_path}"
-    puts "LITESTREAM_REPLICA_URL=#{Litestream.configuration.replica_url}"
+    puts "LITESTREAM_REPLICA_BUCKET=#{Litestream.configuration.replica_bucket}"
     puts "LITESTREAM_ACCESS_KEY_ID=#{Litestream.configuration.replica_key_id}"
     puts "LITESTREAM_SECRET_ACCESS_KEY=#{Litestream.configuration.replica_access_key}"
 

@@ -32,7 +32,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       Rake.application.invoke_task "litestream:env"
     end
 
-    assert_equal "LITESTREAM_DATABASE_PATH=path/to/database\nLITESTREAM_REPLICA_URL=\nLITESTREAM_ACCESS_KEY_ID=\nLITESTREAM_SECRET_ACCESS_KEY=\n", out
+    assert_equal "LITESTREAM_REPLICA_BUCKET=\nLITESTREAM_ACCESS_KEY_ID=\nLITESTREAM_SECRET_ACCESS_KEY=\n", out
     assert_equal "", err
   end
 

@@ -17,14 +17,18 @@ Litestream.configure do |config|
   # existing knowledge of the database path.
   # config.database_path = ActiveRecord::Base.connection_db_config.database
 
-  # Short-hand form of specifying a replica location.
-  # When using S3, a value will look like "s3://mybkt.litestream.io/db"
-  # Litestream also supports Azure Blog Storage, Backblaze B2, DigitalOcean Spaces,
+  # Replica-specific bucket location.
+  # This will be your bucket's URL without the `https://` prefix.
+  # For example, if you used DigitalOcean Spaces, your bucket URL could look like:
+  #   https://myapp.fra1.digitaloceanspaces.com
+  # And so you should set your `replica_bucket` to:
+  #   myapp.fra1.digitaloceanspaces.com
+  # Litestream supports Azure Blog Storage, Backblaze B2, DigitalOcean Spaces,
   # Scaleway Object Storage, Google Cloud Storage, Linode Object Storage, and
   # any SFTP server.
   # In this example, we are using Rails encrypted credentials to store the URL to
   # our storage provider bucket.
-  # config.replica_url = litestream_credentials.replica_url
+  # config.replica_bucket = litestream_credentials.replica_bucket
 
   # Replica-specific authentication key.
   # Litestream needs authentication credentials to access your storage provider bucket.
