@@ -1,21 +1,12 @@
 # Use this hook to configure the litestream-ruby gem.
 # All configuration options will be available as environment variables, e.g.
-# config.database_path becomes LITESTREAM_DATABASE_PATH
+# config.replica_bucket becomes LITESTREAM_REPLICA_BUCKET
 # This allows you to configure Litestream using Rails encrypted credentials,
 # or some other mechanism where the values are only avaialble at runtime.
 
 Litestream.configure do |config|
   # An example of using Rails encrypted credentials to configure Litestream.
   # litestream_credentials = Rails.application.credentials.litestream
-  #
-  # The absolute or relative path to a SQLite database file.
-  # Litestream will monitor this file for changes and replicate them to the
-  # any of the configured replicas specified for this database in the
-  # `litestream.yml` configuration file.
-  # When using SQLite as your database engine for ActiveRecord, you should always
-  # set this to the path of your SQLite database file. You can do so using Rails'
-  # existing knowledge of the database path.
-  # config.database_path = ActiveRecord::Base.connection_db_config.database
 
   # Replica-specific bucket location.
   # This will be your bucket's URL without the `https://` prefix.
