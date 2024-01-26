@@ -10,8 +10,12 @@
 #
 # For more details, see: https://litestream.io/reference/config/
 dbs:
-  - path: $LITESTREAM_DATABASE_PATH
+  <%- production_sqlite_databases.each do |database| -%>
+  - path: <%= database %>
     replicas:
-      - url: $LITESTREAM_REPLICA_URL
+      - type: s3
+        bucket: $LITESTREAM_REPLICA_BUCKET
+        path: <%= database %>
         access-key-id: $LITESTREAM_ACCESS_KEY_ID
         secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
+  <%- end -%>
