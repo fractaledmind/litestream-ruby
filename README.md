@@ -55,7 +55,7 @@ The gem streamlines the configuration process by providing a default configurati
 dbs:
   - path: $LITESTREAM_DATABASE_PATH
     replicas:
-      - url: $LITESTREAM_REPLICA_URL
+      - url: $LITESTREAM_REPLICA_BUCKET
         access-key-id: $LITESTREAM_ACCESS_KEY_ID
         secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
 ```
@@ -66,7 +66,7 @@ The gem also provides a default initializer file at `config/initializers/litestr
 litestream_credentials = Rails.application.credentials.litestream
 Litestream.configure do |config|
   config.database_path = ActiveRecord::Base.connection_db_config.database
-  config.replica_url = litestream_credentials.replica_url
+  config.replica_bucket = litestream_credentials.replica_bucket
   config.replica_key_id = litestream_credentials.replica_key_id
   config.replica_access_key = litestream_credentials.replica_access_key
 end
@@ -113,7 +113,7 @@ Once you have a MinIO server running, you can create a bucket for Litestream to 
 ```ruby
 Litestream.configure do |config|
   config.database_path = ActiveRecord::Base.connection_db_config.database
-  config.replica_url = "s3://mybkt.localhost:9000/"
+  config.replica_bucket = "s3://mybkt.localhost:9000/"
   config.replica_key_id = "minioadmin"
   config.replica_access_key = "minioadmin"
 end

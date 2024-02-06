@@ -8,7 +8,7 @@ module Litestream
       source_root File.expand_path("templates", __dir__)
 
       def copy_config_file
-        template "config.yml", "config/litestream.yml"
+        template "config.yml.erb", "config/litestream.yml"
       end
 
       def copy_initializer_file
@@ -26,6 +26,16 @@ module Litestream
             PROCFILE
           end
         end
+      end
+
+      private
+
+      def production_sqlite_databases
+        ActiveRecord::Base
+          .configurations
+          .configs_for(env_name: "production", include_hidden: true)
+          .select { |config| ["sqlite3", "litedb"].include? config.adapter }
+          .map(&:database)
       end
     end
   end
