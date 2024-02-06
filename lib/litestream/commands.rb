@@ -86,7 +86,12 @@ module Litestream
 
       command = [executable, "replicate", *args]
       puts command.inspect
-      system(*command)
+
+      # To release the resources of the Ruby process, just fork and exit.
+      # The forked process executes litestream and replaces itself.
+      if fork.nil?
+        exec(*command)
+      end
     end
   end
 end
