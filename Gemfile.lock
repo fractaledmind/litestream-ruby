@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    litestream (0.3.2)
+    litestream (0.3.3)
 
 GEM
   remote: https://rubygems.org/
