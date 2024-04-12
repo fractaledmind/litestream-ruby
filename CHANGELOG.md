@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.4.0] - 2024-04-12
+
+- Generate config file with support for multiple databases ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/7))
+
 ## [0.3.3] - 2024-01-06
 
 - Fork the Litestream process to minimize memory overhead ([@supermomonga](https://github.com/fractaledmind/litestream-ruby/pull/6))
