@@ -73,11 +73,11 @@ module Litestream
         exe_file
       end
 
-      def replicate(argv = {})
-        execute("replicate", argv)
+      def replicate(async: true, **argv)
+        execute("replicate", argv, async: async)
       end
 
-      def restore(database, argv = {})
+      def restore(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
 
         dir, file = File.split(database)
@@ -90,28 +90,28 @@ module Litestream
           "-o" => backup
         }.merge(argv)
 
-        execute("restore", args, database, async:)
+        execute("restore", args, database, async: async)
 
         backup
       end
 
-      def databases(argv = {})
-        execute("databases", argv)
+      def databases(async: true, **argv)
+        execute("databases", argv, async: async)
       end
 
-      def generations(database, argv = {})
+      def generations(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database)
+        execute("generations", argv, database, async: async)
       end
 
-      def snapshots(database, argv = {})
+      def snapshots(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("snapshots", argv, database)
+        execute("snapshots", argv, database, async: async)
       end
 
-      def validate(database, argv = {}, async: true)
+      def validate(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for validate command, e.g. litestream:validate -- --database=path/to/database.sqlite" if database.nil?
 
         backup = restore(database, argv, async: false)
@@ -131,7 +131,7 @@ module Litestream
 
       private
 
-      def execute(command, argv = {}, database = nil)
+      def execute(command, argv = {}, database = nil, async: true)
         if Litestream.configuration
           ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.configuration.replica_bucket
           ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.configuration.replica_key_id
@@ -142,12 +142,14 @@ module Litestream
           "--config" => Rails.root.join("config", "litestream.yml").to_s
         }.merge(argv).to_a.flatten.compact
         cmd = [executable, command, *args, database].compact
+        puts cmd.inspect if ENV["DEBUG"]
 
-        # To release the resources of the Ruby process, just fork and exit.
-        # The forked process executes litestream and replaces itself.
-        if fork.nil?
-          puts cmd.inspect if ENV["DEBUG"]
-          exec(*cmd)
+        if async
+          # To release the resources of the Ruby process, just fork and exit.
+          # The forked process executes litestream and replaces itself.
+          exec(*cmd) if fork.nil?
+        else
+          system(*cmd)
         end
       end
     end
