@@ -36,4 +36,40 @@ namespace :litestream do
 
     Litestream::Commands.restore(options.delete("--database") || options.delete("-database"), options)
   end
+
+  desc "List all databases and associated replicas in the config file, e.g. rake litestream:databases -- -no-expand-env"
+  task databases: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.databases(options)
+  end
+
+  desc "List all generations for a database or replica, e.g. rake litestream:generations -- -no-expand-env"
+  task generations: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.generations(options.delete("--database") || options.delete("-database"), options)
+  end
+
+  desc "List all snapshots for a database or replica, e.g. rake litestream:snapshots -- -no-expand-env"
+  task snapshots: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.snapshots(options.delete("--database") || options.delete("-database"), options)
+  end
 end
