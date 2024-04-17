@@ -24,4 +24,16 @@ namespace :litestream do
 
     Litestream::Commands.replicate(options)
   end
+
+  desc "Restore a SQLite database from a Litestream replica, e.g. rake litestream:restore -- -database=storage/production.sqlite3"
+  task restore: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.restore(options.delete("--database"), options)
+  end
 end
