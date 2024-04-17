@@ -89,7 +89,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
   def test_restore_task_with_arguments
     ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
     fake = Minitest::Mock.new
-    fake.expect :call, nil, ["db/test.sqlite3", {"--if-db-not-exists"=>nil}]
+    fake.expect :call, nil, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
     Litestream::Commands.stub :restore, fake do
       Rake.application.invoke_task "litestream:restore"
     end
