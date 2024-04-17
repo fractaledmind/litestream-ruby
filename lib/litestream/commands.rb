@@ -6,16 +6,13 @@ module Litestream
     GEM_NAME = "litestream"
 
     # raised when the host platform is not supported by upstream litestream's binary releases
-    class UnsupportedPlatformException < StandardError
-    end
+    UnsupportedPlatformException = Class.new(StandardError)
 
     # raised when the litestream executable could not be found where we expected it to be
-    class ExecutableNotFoundException < StandardError
-    end
+    ExecutableNotFoundException = Class.new(StandardError)
 
     # raised when LITESTREAM_INSTALL_DIR does not exist
-    class DirectoryNotFoundException < StandardError
-    end
+    DirectoryNotFoundException = Class.new(StandardError)
 
     def self.platform
       [:cpu, :os].map { |m| Gem::Platform.local.send(m) }.join("-")

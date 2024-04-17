@@ -14,7 +14,6 @@ module Litestream
     attr_accessor :database_path, :replica_bucket, :replica_key_id, :replica_access_key
 
     def initialize
-      @mailer_sender = "donotreply@example.com"
     end
   end
 end
