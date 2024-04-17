@@ -716,7 +716,7 @@ class TestCommands < ActiveSupport::TestCase
   class TestValidateCommand < TestCommands
     def test_validate_with_no_database
       assert_raises ArgumentError do
-        Litestream::Commands.validate()
+        Litestream::Commands.validate
       end
     end
 

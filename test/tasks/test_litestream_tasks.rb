@@ -236,7 +236,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size:{original: 1, replica: 1}, tables:{original: 2, replica: 2}}, ["db/test.sqlite3", {}]
+      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {}]
 
       Litestream::Commands.stub :validate, fake do
         out, _err = capture_io do
@@ -253,7 +253,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       ARGV.replace ["--", "--database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size:{original: 1, replica: 1}, tables:{original: 2, replica: 2}}, ["db/test.sqlite3", {}]
+      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {}]
 
       Litestream::Commands.stub :validate, fake do
         out, _err = capture_io do
@@ -270,7 +270,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size:{original: 1, replica: 1}, tables:{original: 2, replica: 2}}, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
+      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
 
       Litestream::Commands.stub :validate, fake do
         out, _err = capture_io do

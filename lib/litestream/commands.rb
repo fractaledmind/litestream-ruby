@@ -126,11 +126,11 @@ module Litestream
         database_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
         database_size = File.size(database)
 
-        Dir.glob(backup+"*").each { |file| File.delete(file) }
+        Dir.glob(backup + "*").each { |file| File.delete(file) }
 
         {
-          size: { original: database_size, replica: backup_size },
-          tables: { original: database_tables_count, replica: backup_tables_count },
+          size: {original: database_size, replica: backup_size},
+          tables: {original: database_tables_count, replica: backup_tables_count}
         }
       end
 
