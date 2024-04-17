@@ -17,6 +17,9 @@ module Litestream
     # raised when a litestream command requires a database argument but it isn't provided
     DatabaseRequiredException = Class.new(StandardError)
 
+    # raised when litestream fails to restore a database backup
+    BackupFailedException = Class.new(StandardError)
+
     class << self
       def platform
         [:cpu, :os].map { |m| Gem::Platform.local.send(m) }.join("-")
@@ -112,9 +115,11 @@ module Litestream
       end
 
       def validate(database, async: true, **argv)
-        raise DatabaseRequiredException, "database argument is required for validate command, e.g. litestream:validate -- --database=path/to/database.sqlite" if database.nil?
+        raise DatabaseRequiredException, "database argument is required for validate command, e.g. litestream:validate -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
 
-        backup = restore(database, argv, async: false)
+        backup = restore(database, async: false, **argv)
+
+        raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
 
         backup_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
         backup_size = File.size(backup)
