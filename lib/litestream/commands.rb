@@ -89,5 +89,32 @@ module Litestream
         exec(*command)
       end
     end
+
+    def self.restore(database, argv = {})
+      if Litestream.configuration
+        ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.configuration.replica_bucket
+        ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.configuration.replica_key_id
+        ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.configuration.replica_access_key
+      end
+
+      dir, file = File.split(database)
+      ext = File.extname(file)
+      base = File.basename(file, ext)
+      now = Time.now.utc.strftime("%Y%m%d%H%M%S")
+
+      args = {
+        "--config" => Rails.root.join("config", "litestream.yml").to_s,
+        "-o" => File.join(dir, "#{base}-#{now}#{ext}")
+      }.merge(argv).to_a.flatten.compact
+
+      command = [executable, "restore", *args, database]
+      puts command.inspect
+
+      # To release the resources of the Ruby process, just fork and exit.
+      # The forked process executes litestream and replaces itself.
+      if fork.nil?
+        exec(*command)
+      end
+    end
   end
 end
