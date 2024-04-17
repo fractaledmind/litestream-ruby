@@ -73,11 +73,11 @@ module Litestream
         exe_file
       end
 
-      def replicate(argv = {}, async: true)
+      def replicate(async: true, **argv)
         execute("replicate", argv, async: async)
       end
 
-      def restore(database, argv = {}, async: true)
+      def restore(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
 
         dir, file = File.split(database)
@@ -92,17 +92,17 @@ module Litestream
         execute("restore", args, database, async: async)
       end
 
-      def databases(argv = {}, async: true)
+      def databases(async: true, **argv)
         execute("databases", argv, async: async)
       end
 
-      def generations(database, argv = {}, async: true)
+      def generations(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
         execute("generations", argv, database, async: async)
       end
 
-      def snapshots(database, argv = {}, async: true)
+      def snapshots(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
         execute("snapshots", argv, database, async: async)
