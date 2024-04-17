@@ -121,16 +121,16 @@ module Litestream
 
         raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
 
-        backup_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        backup_size = File.size(backup)
-        database_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        database_size = File.size(database)
+        restored_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        restored_size = File.size(backup)
+        original_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        original_size = File.size(database)
 
         Dir.glob(backup + "*").each { |file| File.delete(file) }
 
         {
-          size: {original: database_size, replica: backup_size},
-          tables: {original: database_tables_count, replica: backup_tables_count}
+          size: {original: original_size, restored: restored_size},
+          tables: {original: original_tables_count, restored: restored_tables_count}
         }
       end
 

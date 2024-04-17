@@ -88,13 +88,13 @@ namespace :litestream do
 
       size
         original          #{result[:size][:original]}
-        replica           #{result[:size][:replica]}
-        delta             #{result[:size][:original] - result[:size][:replica]}
+        restored          #{result[:size][:restored]}
+        delta             #{result[:size][:original] - result[:size][:restored]}
 
       tables
         original          #{result[:tables][:original]}
-        replica           #{result[:tables][:replica]}
-        delta             #{result[:tables][:original] - result[:tables][:replica]}
+        restored          #{result[:tables][:restored]}
+        delta             #{result[:tables][:original] - result[:tables][:restored]}
     TXT
   end
 end

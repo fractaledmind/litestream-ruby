@@ -236,7 +236,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {}]
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {}]
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -245,15 +245,15 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+replica\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+replica\s+2/, out)
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
     end
 
     def test_verify_task_with_only_database_using_double_dash
       ARGV.replace ["--", "--database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {}]
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {}]
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -262,15 +262,15 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+replica\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+replica\s+2/, out)
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
     end
 
     def test_verify_task_with_arguments
       ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {size: {original: 1, replica: 1}, tables: {original: 2, replica: 2}}, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -279,8 +279,8 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+replica\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+replica\s+2/, out)
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
     end
 
     def test_verify_task_with_arguments_without_separator
