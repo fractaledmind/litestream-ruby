@@ -573,4 +573,143 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
   end
+
+  class TestSnapshotsCommand < TestCommands
+    def test_snapshots_with_no_options
+      stub = proc do |executable, command, *argv|
+        assert_match Regexp.new("exe/test/litestream"), executable
+        assert_equal "snapshots", command
+        assert_equal 3, argv.size
+        assert_equal "--config", argv[0]
+        assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
+        assert_equal "db/test.sqlite3", argv[2]
+      end
+      Litestream::Commands.stub :exec, stub do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+    end
+
+    def test_snapshots_with_boolean_option
+      stub = proc do |executable, command, *argv|
+        assert_match Regexp.new("exe/test/litestream"), executable
+        assert_equal "snapshots", command
+        assert_equal 4, argv.size
+        assert_equal "--config", argv[0]
+        assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
+        assert_equal "--if-db-not-exists", argv[2]
+        assert_equal "db/test.sqlite3", argv[3]
+      end
+      Litestream::Commands.stub :exec, stub do
+        Litestream::Commands.snapshots("db/test.sqlite3", "--if-db-not-exists" => nil)
+      end
+    end
+
+    def test_snapshots_with_string_option
+      stub = proc do |executable, command, *argv|
+        assert_match Regexp.new("exe/test/litestream"), executable
+        assert_equal "snapshots", command
+        assert_equal 5, argv.size
+        assert_equal "--config", argv[0]
+        assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
+        assert_equal "--parallelism", argv[2]
+        assert_equal 10, argv[3]
+        assert_equal "db/test.sqlite3", argv[4]
+      end
+      Litestream::Commands.stub :exec, stub do
+        Litestream::Commands.snapshots("db/test.sqlite3", "--parallelism" => 10)
+      end
+    end
+
+    def test_snapshots_with_config_option
+      stub = proc do |executable, command, *argv|
+        assert_match Regexp.new("exe/test/litestream"), executable
+        assert_equal "snapshots", command
+        assert_equal 3, argv.size
+        assert_equal "--config", argv[0]
+        assert_equal "CONFIG", argv[1]
+        assert_equal "db/test.sqlite3", argv[2]
+      end
+      Litestream::Commands.stub :exec, stub do
+        Litestream::Commands.snapshots("db/test.sqlite3", "--config" => "CONFIG")
+      end
+    end
+
+    def test_snapshots_sets_replica_bucket_env_var_from_config_when_env_var_not_set
+      Litestream.configure do |config|
+        config.replica_bucket = "mybkt"
+      end
+
+      Litestream::Commands.stub :exec, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_equal nil, ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_equal nil, ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+
+    def test_snapshots_sets_replica_key_id_env_var_from_config_when_env_var_not_set
+      Litestream.configure do |config|
+        config.replica_key_id = "mykey"
+      end
+
+      Litestream::Commands.stub :exec, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_equal nil, ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_equal nil, ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+
+    def test_snapshots_sets_replica_access_key_env_var_from_config_when_env_var_not_set
+      Litestream.configure do |config|
+        config.replica_access_key = "access"
+      end
+
+      Litestream::Commands.stub :exec, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_equal nil, ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_equal nil, ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+
+    def test_snapshots_sets_all_env_vars_from_config_when_env_vars_not_set
+      Litestream.configure do |config|
+        config.replica_bucket = "mybkt"
+        config.replica_key_id = "mykey"
+        config.replica_access_key = "access"
+      end
+
+      Litestream::Commands.stub :exec, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+
+    def test_snapshots_does_not_set_env_var_from_config_when_env_vars_already_set
+      ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
+      ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
+      ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+
+      Litestream.configure do |config|
+        config.replica_bucket = "mybkt"
+        config.replica_key_id = "mykey"
+        config.replica_access_key = "access"
+      end
+
+      Litestream::Commands.stub :exec, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+  end
 end
