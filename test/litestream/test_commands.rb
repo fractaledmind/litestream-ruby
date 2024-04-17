@@ -11,6 +11,13 @@ class TestCommands < ActiveSupport::TestCase
     result
   end
 
+  def teardown
+    Litestream.configuration = nil
+    ENV["LITESTREAM_REPLICA_BUCKET"] = nil
+    ENV["LITESTREAM_ACCESS_KEY_ID"] = nil
+    ENV["LITESTREAM_SECRET_ACCESS_KEY"] = nil
+  end
+
   def test_replicate_with_no_options
     stub = proc do |executable, command, *argv|
       assert_match Regexp.new("exe/test/litestream"), executable
@@ -64,5 +71,83 @@ class TestCommands < ActiveSupport::TestCase
     Litestream::Commands.stub :exec, stub do
       Litestream::Commands.replicate("--config" => "CONFIG")
     end
+  end
+
+  def test_replicate_sets_replica_bucket_env_var_from_config_when_env_var_not_set
+    Litestream.configure do |config|
+      config.replica_bucket = "mybkt"
+    end
+
+    Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.replicate
+    end
+
+    assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+    assert_equal nil, ENV["LITESTREAM_ACCESS_KEY_ID"]
+    assert_equal nil, ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+  end
+
+  def test_replicate_sets_replica_key_id_env_var_from_config_when_env_var_not_set
+    Litestream.configure do |config|
+      config.replica_key_id = "mykey"
+    end
+
+    Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.replicate
+    end
+
+    assert_equal nil, ENV["LITESTREAM_REPLICA_BUCKET"]
+    assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
+    assert_equal nil, ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+  end
+
+  def test_replicate_sets_replica_access_key_env_var_from_config_when_env_var_not_set
+    Litestream.configure do |config|
+      config.replica_access_key = "access"
+    end
+
+    Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.replicate
+    end
+
+    assert_equal nil, ENV["LITESTREAM_REPLICA_BUCKET"]
+    assert_equal nil, ENV["LITESTREAM_ACCESS_KEY_ID"]
+    assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+  end
+
+  def test_replicate_sets_all_env_vars_from_config_when_env_vars_not_set
+    Litestream.configure do |config|
+      config.replica_bucket = "mybkt"
+      config.replica_key_id = "mykey"
+      config.replica_access_key = "access"
+    end
+
+    Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.replicate
+    end
+
+    assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+    assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
+    assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+  end
+
+  def test_replicate_does_not_set_env_var_from_config_when_env_vars_already_set
+    ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
+    ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
+    ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+
+    Litestream.configure do |config|
+      config.replica_bucket = "mybkt"
+      config.replica_key_id = "mykey"
+      config.replica_access_key = "access"
+    end
+
+    Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.replicate
+    end
+
+    assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
+    assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
+    assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
   end
 end
