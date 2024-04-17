@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.5.0] - 2024-04-17
+
+- Add a `restore` command ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/14))
+- Ensure that the #replicate method only sets unset ENV vars and doesn't overwrite them ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/13))
+
 ## [0.4.0] - 2024-04-12
 
 - Generate config file with support for multiple databases ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/7))
