@@ -84,7 +84,7 @@ namespace :litestream do
 
     result = Litestream::Commands.validate(options.delete("--database") || options.delete("-database"), options)
 
-    puts <<~TXT
+    puts <<~TXT if result
 
       size
         original          #{result[:size][:original]}
