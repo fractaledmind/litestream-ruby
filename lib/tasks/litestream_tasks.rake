@@ -13,7 +13,7 @@ namespace :litestream do
     true
   end
 
-  desc "Start a process to monitor and continuously replicate the SQLite databases defined in your configuration file"
+  desc 'Monitor and continuously replicate SQLite databases defined in your config file, e.g. rake litestream:replicate -- -exec "foreman start"'
   task replicate: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
