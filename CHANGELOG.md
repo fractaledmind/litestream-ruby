@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+## [0.5.3] - 2024-04-17
+
+- Fix bug with Rake tasks not handling new kwarg method signatures of commands
+
+## [0.5.2] - 2024-04-17
+
+- Add a `verify` command and Rake task ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/16))
+- Allow any command to be run either synchronously or asynchronously ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/17))
+
+## [0.5.1] - 2024-04-17
+
+- Add `databases`, `generations`, and `snapshots` commands ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/15))
+
 ## [0.5.0] - 2024-04-17
 
 - Add a `restore` command ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/14))
