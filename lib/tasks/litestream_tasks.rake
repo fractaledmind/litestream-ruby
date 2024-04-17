@@ -34,6 +34,6 @@ namespace :litestream do
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
 
-    Litestream::Commands.restore(options.delete("--database"), options)
+    Litestream::Commands.restore(options.delete("--database") || options.delete("-database"), options)
   end
 end
