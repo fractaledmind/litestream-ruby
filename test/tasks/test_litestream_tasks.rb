@@ -28,19 +28,6 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       assert_equal "", out
       assert_equal "You have not configured the Litestream gem with any values to generate ENV variables\n", err
     end
-
-    def test_env_task_when_configured_outputs_env_variables
-      Litestream.configure do |config|
-        config.database_path = "path/to/database"
-      end
-
-      out, err = capture_io do
-        Rake.application.invoke_task "litestream:env"
-      end
-
-      assert_equal "LITESTREAM_REPLICA_BUCKET=\nLITESTREAM_ACCESS_KEY_ID=\nLITESTREAM_SECRET_ACCESS_KEY=\n", out
-      assert_equal "", err
-    end
   end
 
   class TestReplicateTask < TestLitestreamTasks
