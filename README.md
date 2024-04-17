@@ -165,6 +165,40 @@ You can forward arguments in whatever order you like, you simply need to ensure 
     Disables environment variable expansion in configuration file.
 ```
 
+### Verification
+
+You can verify the integrity of your backed-up databases using the gem's provided `litestream:verify` rake task. This rake task requires that you specify which specific database you want to verify. As with the `litestream:restore` tasks, you pass arguments to the rake task via argument forwarding. For example, to verify the production database, you would run:
+
+```shell
+bin/rails litestream:verify -- --database=storage/production.sqlite3
+# or
+bundle exec rake litestream:verify -- --database=storage/production.sqlite3
+```
+
+The `litestream:verify` rake task takes the same options as the `litestream:restore` rake task. After restoring the backup, the rake task will verify the integrity of the restored database by ensuring that the restored database file
+
+1. exists,
+2. can be opened by SQLite, and
+3. sufficiently matches the original database file.
+
+Since point 3 is subjective, the rake task will output a message providing both the file size and number of tables of both the "original" and "restored" databases. You must manually verify that the restored database is within an acceptable range of the original database.
+
+The rake task will output a message similar to the following:
+
+```
+size
+  original          21688320
+  restored          21688320
+  delta             0
+
+tables
+  original          9
+  restored          9
+  delta             0
+```
+
+After restoring the backup, the `litestream:verify` rake task will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task instead.
+
 ### Introspection
 
 Litestream offers a handful of commands that allow you to introspect the state of your replication. The gem provides a few rake tasks that wrap these commands for you. For example, you can list the databases that Litestream is configured to replicate:

@@ -17,6 +17,9 @@ module Litestream
     # raised when a litestream command requires a database argument but it isn't provided
     DatabaseRequiredException = Class.new(StandardError)
 
+    # raised when litestream fails to restore a database backup
+    BackupFailedException = Class.new(StandardError)
+
     class << self
       def platform
         [:cpu, :os].map { |m| Gem::Platform.local.send(m) }.join("-")
@@ -84,12 +87,15 @@ module Litestream
         ext = File.extname(file)
         base = File.basename(file, ext)
         now = Time.now.utc.strftime("%Y%m%d%H%M%S")
+        backup = File.join(dir, "#{base}-#{now}#{ext}")
 
         args = {
-          "-o" => File.join(dir, "#{base}-#{now}#{ext}")
+          "-o" => backup
         }.merge(argv)
 
         execute("restore", args, database, async: async)
+
+        backup
       end
 
       def databases(async: true, **argv)
@@ -106,6 +112,26 @@ module Litestream
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
         execute("snapshots", argv, database, async: async)
+      end
+
+      def verify(database, async: true, **argv)
+        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
+
+        backup = restore(database, async: false, **argv)
+
+        raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
+
+        restored_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        restored_size = File.size(backup)
+        original_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        original_size = File.size(database)
+
+        Dir.glob(backup + "*").each { |file| File.delete(file) }
+
+        {
+          size: {original: original_size, restored: restored_size},
+          tables: {original: original_tables_count, restored: restored_tables_count}
+        }
       end
 
       private

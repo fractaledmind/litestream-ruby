@@ -11,6 +11,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
     Rake::Task["litestream:databases"].reenable
     Rake::Task["litestream:generations"].reenable
     Rake::Task["litestream:snapshots"].reenable
+    Rake::Task["litestream:verify"].reenable
   end
 
   def teardown
@@ -227,6 +228,75 @@ class TestLitestreamTasks < ActiveSupport::TestCase
         Rake.application.invoke_task "litestream:snapshots"
       end
       fake.verify
+    end
+  end
+
+  class TestverifyTask < TestLitestreamTasks
+    def test_verify_task_with_only_database_using_single_dash
+      ARGV.replace ["--", "-database=db/test.sqlite3"]
+      fake = Minitest::Mock.new
+      out = nil
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {}]
+
+      Litestream::Commands.stub :verify, fake do
+        out, _err = capture_io do
+          Rake.application.invoke_task "litestream:verify"
+        end
+      end
+
+      fake.verify
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+    end
+
+    def test_verify_task_with_only_database_using_double_dash
+      ARGV.replace ["--", "--database=db/test.sqlite3"]
+      fake = Minitest::Mock.new
+      out = nil
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {}]
+
+      Litestream::Commands.stub :verify, fake do
+        out, _err = capture_io do
+          Rake.application.invoke_task "litestream:verify"
+        end
+      end
+
+      fake.verify
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+    end
+
+    def test_verify_task_with_arguments
+      ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
+      fake = Minitest::Mock.new
+      out = nil
+      fake.expect :call, {size: {original: 1, restored: 1}, tables: {original: 2, restored: 2}}, ["db/test.sqlite3", {"--if-db-not-exists" => nil}]
+
+      Litestream::Commands.stub :verify, fake do
+        out, _err = capture_io do
+          Rake.application.invoke_task "litestream:verify"
+        end
+      end
+
+      fake.verify
+      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+    end
+
+    def test_verify_task_with_arguments_without_separator
+      ARGV.replace ["-database=db/test.sqlite3"]
+      fake = Minitest::Mock.new
+      out = nil
+      fake.expect :call, nil, [nil, {}]
+
+      Litestream::Commands.stub :verify, fake do
+        out, _err = capture_io do
+          Rake.application.invoke_task "litestream:verify"
+        end
+      end
+
+      fake.verify
+      assert_equal "", out
     end
   end
 end
