@@ -84,12 +84,15 @@ module Litestream
         ext = File.extname(file)
         base = File.basename(file, ext)
         now = Time.now.utc.strftime("%Y%m%d%H%M%S")
+        backup = File.join(dir, "#{base}-#{now}#{ext}")
 
         args = {
-          "-o" => File.join(dir, "#{base}-#{now}#{ext}")
+          "-o" => backup
         }.merge(argv)
 
-        execute("restore", args, database)
+        execute("restore", args, database, async:)
+
+        backup
       end
 
       def databases(argv = {})
@@ -106,6 +109,24 @@ module Litestream
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
         execute("snapshots", argv, database)
+      end
+
+      def validate(database, argv = {}, async: true)
+        raise DatabaseRequiredException, "database argument is required for validate command, e.g. litestream:validate -- --database=path/to/database.sqlite" if database.nil?
+
+        backup = restore(database, argv, async: false)
+
+        backup_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        backup_size = File.size(backup)
+        database_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
+        database_size = File.size(database)
+
+        Dir.glob(backup+"*").each { |file| File.delete(file) }
+
+        {
+          size: { original: database_size, replica: backup_size },
+          tables: { original: database_tables_count, replica: backup_tables_count },
+        }
       end
 
       private

@@ -72,4 +72,29 @@ namespace :litestream do
 
     Litestream::Commands.snapshots(options.delete("--database") || options.delete("-database"), options)
   end
+
+  desc "Validate backup of SQLite database from a Litestream replica, e.g. rake litestream:validate -- -database=storage/production.sqlite3"
+  task validate: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    result = Litestream::Commands.validate(options.delete("--database") || options.delete("-database"), options)
+
+    puts <<~TXT
+
+      size
+        original          #{result[:size][:original]}
+        replica           #{result[:size][:replica]}
+        delta             #{result[:size][:original] - result[:size][:replica]}
+
+      tables
+        original          #{result[:tables][:original]}
+        replica           #{result[:tables][:replica]}
+        delta             #{result[:tables][:original] - result[:tables][:replica]}
+    TXT
+  end
 end
