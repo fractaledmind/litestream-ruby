@@ -49,7 +49,7 @@ namespace :litestream do
     Litestream::Commands.databases(options)
   end
 
-  desc "List all generations for a database or replica, e.g. rake litestream:generations -- -no-expand-env"
+  desc "List all generations for a database or replica, e.g. rake litestream:generations -- -database=storage/production.sqlite3"
   task generations: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -61,7 +61,7 @@ namespace :litestream do
     Litestream::Commands.generations(options.delete("--database") || options.delete("-database"), options)
   end
 
-  desc "List all snapshots for a database or replica, e.g. rake litestream:snapshots -- -no-expand-env"
+  desc "List all snapshots for a database or replica, e.g. rake litestream:snapshots -- -database=storage/production.sqlite3"
   task snapshots: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
