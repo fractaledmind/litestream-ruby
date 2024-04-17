@@ -92,9 +92,94 @@ bin/rails litestream:replicate -- -exec "foreman start"
 
 This example utilizes the `-exec` option available on [the `replicate` command](https://litestream.io/reference/replicate/) which provides basic process management, since Litestream will exit when the child process exits. In this example, we only launch our collection of Rails application processes (like Rails and SolidQueue, for example) after the Litestream replication process is ready.
 
-The rake task is the recommended way to interact with the Litestream replication process in your Rails application or Ruby project. But, you _can_ take full manual control over the replication process and simply run the `litestream replicate --config config/litestream.yml` command to start the Litestream process. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
+The Litestream `replicate` command supports the following options, which can be passed through the rake task:
+```shell
+-config PATH
+    Specifies the configuration file.
+    Defaults to /etc/litestream.yml
 
-The full set of commands available to the `litestream` executable are covered in Litestream's [command reference](https://litestream.io/reference/). Currently, only the `replicate` command is provided as a rake task by the gem.
+-exec CMD
+    Executes a subcommand. Litestream will exit when the child
+    process exits. Useful for simple process management.
+
+-no-expand-env
+    Disables environment variable expansion in configuration file.
+```
+
+### Restoration
+
+You can restore any replicated database at any point using the gem's provided `litestream:restore` rake task. This rake task requires that you specify which specific database you want to restore. As with the `litestream:replicate` task, you pass arguments to the rake task via argument forwarding. For example, to restore the production database, you would run:
+
+```shell
+bin/rails litestream:restore -- --database=storage/production.sqlite3
+# or
+bundle exec rake litestream:restore -- --database=storage/production.sqlite3
+```
+
+You can restore any of the databases specified in your `config/litestream.yml` file. The `--database` argument should be the path to the database file you want to restore and must match the value for the `path` key of one of your configured databases. The `litestream:restore` rake task will automatically load the configuration file and set the environment variables before calling the Litestream executable.
+
+If you need to pass arguments through the rake task to the underlying `litestream` command, that can be done with additional forwarded arguments:
+
+```shell
+bin/rails litestream:replicate -- --database=storage/production.sqlite3 --if-db-not-exists
+```
+
+You can forward arguments in whatever order you like, you simply need to ensure that the `--database` argument is present. You can also use either a single-dash `-database` or double-dash `--database` argument format. The Litestream `restore` command supports the following options, which can be passed through the rake task:
+
+```shell
+-o PATH
+    Output path of the restored database.
+    Defaults to original DB path.
+
+-if-db-not-exists
+    Returns exit code of 0 if the database already exists.
+
+-if-replica-exists
+    Returns exit code of 0 if no backups found.
+
+-parallelism NUM
+    Determines the number of WAL files downloaded in parallel.
+    Defaults to 8
+
+-replica NAME
+    Restore from a specific replica.
+    Defaults to replica with latest data.
+
+-generation NAME
+    Restore from a specific generation.
+    Defaults to generation with latest data.
+
+-index NUM
+    Restore up to a specific WAL index (inclusive).
+    Defaults to use the highest available index.
+
+-timestamp TIMESTAMP
+    Restore to a specific point-in-time.
+    Defaults to use the latest available backup.
+
+-config PATH
+    Specifies the configuration file.
+    Defaults to /etc/litestream.yml
+
+-no-expand-env
+    Disables environment variable expansion in configuration file.
+```
+
+### Additional commands
+
+The rake tasks are the recommended way to interact with the Litestream utility in your Rails application or Ruby project. But, you _can_ work directly with the Litestream CLI. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
+
+The full set of commands available to the `litestream` executable are covered in Litestream's [command reference](https://litestream.io/reference/), but can be summarized as:
+
+```shell
+litestream databases [arguments]
+litestream generations [arguments] DB_PATH|REPLICA_URL
+litestream replicate [arguments]
+litestream restore [arguments] DB_PATH|REPLICA_URL
+litestream snapshots [arguments] DB_PATH|REPLICA_URL
+litestream version
+litestream wal [arguments] DB_PATH|REPLICA_URL
+```
 
 ### Using in development
 

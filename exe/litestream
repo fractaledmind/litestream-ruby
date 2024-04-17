@@ -5,7 +5,6 @@ require "litestream/commands"
 
 begin
   command = [Litestream::Commands.executable, *ARGV]
-  puts command.inspect
   exec(*command)
 rescue Litestream::Commands::UnsupportedPlatformException, Litestream::Commands::ExecutableNotFoundException => e
   warn("ERROR: " + e.message)

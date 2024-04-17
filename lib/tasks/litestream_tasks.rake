@@ -13,7 +13,7 @@ namespace :litestream do
     true
   end
 
-  desc "Start a process to monitor and continuously replicate the SQLite databases defined in your configuration file"
+  desc 'Monitor and continuously replicate SQLite databases defined in your config file, e.g. rake litestream:replicate -- -exec "foreman start"'
   task replicate: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -23,5 +23,17 @@ namespace :litestream do
     end
 
     Litestream::Commands.replicate(options)
+  end
+
+  desc "Restore a SQLite database from a Litestream replica, e.g. rake litestream:restore -- -database=storage/production.sqlite3"
+  task restore: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+
+    Litestream::Commands.restore(options.delete("--database") || options.delete("-database"), options)
   end
 end
