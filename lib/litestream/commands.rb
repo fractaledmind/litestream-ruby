@@ -114,8 +114,8 @@ module Litestream
         execute("snapshots", argv, database, async: async)
       end
 
-      def validate(database, async: true, **argv)
-        raise DatabaseRequiredException, "database argument is required for validate command, e.g. litestream:validate -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
+      def verify(database, async: true, **argv)
+        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
 
         backup = restore(database, async: false, **argv)
 

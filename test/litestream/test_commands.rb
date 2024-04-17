@@ -713,20 +713,20 @@ class TestCommands < ActiveSupport::TestCase
     end
   end
 
-  class TestValidateCommand < TestCommands
-    def test_validate_with_no_database
+  class TestverifyCommand < TestCommands
+    def test_verify_with_no_database
       assert_raises ArgumentError do
-        Litestream::Commands.validate
+        Litestream::Commands.verify
       end
     end
 
-    def test_validate_with_non_existent_database
+    def test_verify_with_non_existent_database
       assert_raises Litestream::Commands::DatabaseRequiredException do
-        Litestream::Commands.validate("db/non_existent.sqlite3")
+        Litestream::Commands.verify("db/non_existent.sqlite3")
       end
     end
 
-    def test_validate_with_restore_not_succeeding
+    def test_verify_with_restore_not_succeeding
       stub = proc do |executable, command, *argv|
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -739,12 +739,12 @@ class TestCommands < ActiveSupport::TestCase
       end
       Litestream::Commands.stub :exec, stub do
         assert_raises Litestream::Commands::BackupFailedException do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
     end
 
-    def test_validate_with_restore_succeeding
+    def test_verify_with_restore_succeeding
       stub = proc do |executable, command, *argv|
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -758,7 +758,7 @@ class TestCommands < ActiveSupport::TestCase
       result = nil
       Litestream::Commands.stub :system, stub do
         File.stub :exist?, true do
-          result = Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
@@ -768,7 +768,7 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal 0, result[:tables][:replica]
     end
 
-    def test_validate_with_boolean_option
+    def test_verify_with_boolean_option
       stub = proc do |executable, command, *argv|
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -783,7 +783,7 @@ class TestCommands < ActiveSupport::TestCase
       result = nil
       Litestream::Commands.stub :system, stub do
         File.stub :exist?, true do
-          result = Litestream::Commands.validate("test/dummy/db/test.sqlite3", "--if-db-not-exists" => nil)
+          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--if-db-not-exists" => nil)
         end
       end
 
@@ -793,7 +793,7 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal 0, result[:tables][:replica]
     end
 
-    def test_validate_with_string_option
+    def test_verify_with_string_option
       stub = proc do |executable, command, *argv|
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -809,7 +809,7 @@ class TestCommands < ActiveSupport::TestCase
       result = nil
       Litestream::Commands.stub :system, stub do
         File.stub :exist?, true do
-          result = Litestream::Commands.validate("test/dummy/db/test.sqlite3", "--parallelism" => 10)
+          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--parallelism" => 10)
         end
       end
 
@@ -819,7 +819,7 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal 0, result[:tables][:replica]
     end
 
-    def test_validate_with_config_option
+    def test_verify_with_config_option
       stub = proc do |executable, command, *argv|
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -833,7 +833,7 @@ class TestCommands < ActiveSupport::TestCase
       result = nil
       Litestream::Commands.stub :system, stub do
         File.stub :exist?, true do
-          result = Litestream::Commands.validate("test/dummy/db/test.sqlite3", "--config" => "CONFIG")
+          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--config" => "CONFIG")
         end
       end
 
@@ -843,14 +843,14 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal 0, result[:tables][:replica]
     end
 
-    def test_validate_sets_replica_bucket_env_var_from_config_when_env_var_not_set
+    def test_verify_sets_replica_bucket_env_var_from_config_when_env_var_not_set
       Litestream.configure do |config|
         config.replica_bucket = "mybkt"
       end
 
       Litestream::Commands.stub :system, nil do
         File.stub :exist?, true do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
@@ -859,14 +859,14 @@ class TestCommands < ActiveSupport::TestCase
       assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
-    def test_validate_sets_replica_key_id_env_var_from_config_when_env_var_not_set
+    def test_verify_sets_replica_key_id_env_var_from_config_when_env_var_not_set
       Litestream.configure do |config|
         config.replica_key_id = "mykey"
       end
 
       Litestream::Commands.stub :system, nil do
         File.stub :exist?, true do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
@@ -875,14 +875,14 @@ class TestCommands < ActiveSupport::TestCase
       assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
-    def test_validate_sets_replica_access_key_env_var_from_config_when_env_var_not_set
+    def test_verify_sets_replica_access_key_env_var_from_config_when_env_var_not_set
       Litestream.configure do |config|
         config.replica_access_key = "access"
       end
 
       Litestream::Commands.stub :system, nil do
         File.stub :exist?, true do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
@@ -891,7 +891,7 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
-    def test_validate_sets_all_env_vars_from_config_when_env_vars_not_set
+    def test_verify_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.configure do |config|
         config.replica_bucket = "mybkt"
         config.replica_key_id = "mykey"
@@ -900,7 +900,7 @@ class TestCommands < ActiveSupport::TestCase
 
       Litestream::Commands.stub :system, nil do
         File.stub :exist?, true do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
@@ -909,7 +909,7 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
-    def test_validate_does_not_set_env_var_from_config_when_env_vars_already_set
+    def test_verify_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
@@ -922,7 +922,7 @@ class TestCommands < ActiveSupport::TestCase
 
       Litestream::Commands.stub :system, nil do
         File.stub :exist?, true do
-          Litestream::Commands.validate("test/dummy/db/test.sqlite3")
+          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
 
