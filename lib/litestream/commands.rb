@@ -74,7 +74,7 @@ module Litestream
       end
 
       def replicate(argv = {}, async: true)
-        execute("replicate", argv, async:)
+        execute("replicate", argv, async: async)
       end
 
       def restore(database, argv = {}, async: true)
@@ -89,23 +89,23 @@ module Litestream
           "-o" => File.join(dir, "#{base}-#{now}#{ext}")
         }.merge(argv)
 
-        execute("restore", args, database, async:)
+        execute("restore", args, database, async: async)
       end
 
       def databases(argv = {}, async: true)
-        execute("databases", argv, async:)
+        execute("databases", argv, async: async)
       end
 
       def generations(database, argv = {}, async: true)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database, async:)
+        execute("generations", argv, database, async: async)
       end
 
       def snapshots(database, argv = {}, async: true)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("snapshots", argv, database, async:)
+        execute("snapshots", argv, database, async: async)
       end
 
       private
