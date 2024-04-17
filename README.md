@@ -165,6 +165,47 @@ You can forward arguments in whatever order you like, you simply need to ensure 
     Disables environment variable expansion in configuration file.
 ```
 
+### Introspection
+
+Litestream offers a handful of commands that allow you to introspect the state of your replication. The gem provides a few rake tasks that wrap these commands for you. For example, you can list the databases that Litestream is configured to replicate:
+
+```shell
+bin/rails litestream:databases
+```
+
+This will return a list of databases and their configured replicas:
+
+```
+path                                                 replicas
+/Users/you/Code/your-app/storage/production.sqlite3  s3
+```
+
+You can also list the generations of a specific database:
+
+```shell
+bin/rails litestream:generations -- --database=storage/production.sqlite3
+```
+
+This will list all generations for the specified database, including stats about their lag behind the primary database and the time range they cover.
+
+```
+name  generation        lag     start                 end
+s3    a295b16a796689f3  -156ms  2024-04-17T00:01:19Z  2024-04-17T00:01:19Z
+```
+
+Finally, you can list the snapshots available for a database:
+
+```shell
+bin/rails litestream:snapshots -- --database=storage/production.sqlite3
+```
+
+This command lists snapshots available for that specified database:
+
+```
+replica  generation        index  size     created
+s3       a295b16a796689f3  1      4645465  2024-04-17T00:01:19Z
+```
+
 ### Additional commands
 
 The rake tasks are the recommended way to interact with the Litestream utility in your Rails application or Ruby project. But, you _can_ work directly with the Litestream CLI. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
