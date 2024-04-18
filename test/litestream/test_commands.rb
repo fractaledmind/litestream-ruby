@@ -784,10 +784,10 @@ class TestCommands < ActiveSupport::TestCase
         end
       end
 
-      assert_equal 20480, result[:size][:original]
-      assert_equal 0, result[:size][:restored]
-      assert_equal 2, result[:tables][:original]
-      assert_equal 0, result[:tables][:restored]
+      assert_equal 20480, result["size"]["original"]
+      assert_equal 0, result["size"]["restored"]
+      assert_equal 2, result["tables"]["original"]
+      assert_equal 0, result["tables"]["restored"]
     end
 
     def test_verify_with_boolean_option
@@ -810,10 +810,10 @@ class TestCommands < ActiveSupport::TestCase
         end
       end
 
-      assert_equal 20480, result[:size][:original]
-      assert_equal 0, result[:size][:restored]
-      assert_equal 2, result[:tables][:original]
-      assert_equal 0, result[:tables][:restored]
+      assert_equal 20480, result["size"]["original"]
+      assert_equal 0, result["size"]["restored"]
+      assert_equal 2, result["tables"]["original"]
+      assert_equal 0, result["tables"]["restored"]
     end
 
     def test_verify_with_string_option
@@ -837,10 +837,10 @@ class TestCommands < ActiveSupport::TestCase
         end
       end
 
-      assert_equal 20480, result[:size][:original]
-      assert_equal 0, result[:size][:restored]
-      assert_equal 2, result[:tables][:original]
-      assert_equal 0, result[:tables][:restored]
+      assert_equal 20480, result["size"]["original"]
+      assert_equal 0, result["size"]["restored"]
+      assert_equal 2, result["tables"]["original"]
+      assert_equal 0, result["tables"]["restored"]
     end
 
     def test_verify_with_config_option
@@ -862,10 +862,10 @@ class TestCommands < ActiveSupport::TestCase
         end
       end
 
-      assert_equal 20480, result[:size][:original]
-      assert_equal 0, result[:size][:restored]
-      assert_equal 2, result[:tables][:original]
-      assert_equal 0, result[:tables][:restored]
+      assert_equal 20480, result["size"]["original"]
+      assert_equal 0, result["size"]["restored"]
+      assert_equal 2, result["tables"]["original"]
+      assert_equal 0, result["tables"]["restored"]
     end
 
     def test_verify_sets_replica_bucket_env_var_from_config_when_env_var_not_set
