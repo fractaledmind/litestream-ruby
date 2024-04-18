@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.5.4] - 2024-04-18
+
+- Remove old usage of config.database_path ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/18))
+- Ensure that executing a command synchronously returns output ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/20))
+
 ## [0.5.3] - 2024-04-17
 
 - Fix bug with Rake tasks not handling new kwarg method signatures of commands
