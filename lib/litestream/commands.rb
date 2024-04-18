@@ -76,11 +76,11 @@ module Litestream
         exe_file
       end
 
-      def replicate(async: true, **argv)
+      def replicate(async: false, **argv)
         execute("replicate", argv, async: async, hashify: false)
       end
 
-      def restore(database, async: true, **argv)
+      def restore(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
 
         dir, file = File.split(database)
@@ -98,23 +98,23 @@ module Litestream
         backup
       end
 
-      def databases(async: true, **argv)
+      def databases(async: false, **argv)
         execute("databases", argv, async: async, hashify: true)
       end
 
-      def generations(database, async: true, **argv)
+      def generations(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
         execute("generations", argv, database, async: async, hashify: true)
       end
 
-      def snapshots(database, async: true, **argv)
+      def snapshots(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
         execute("snapshots", argv, database, async: async, hashify: true)
       end
 
-      def verify(database, async: true, **argv)
+      def verify(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
 
         backup = restore(database, async: false, **argv)
@@ -136,7 +136,7 @@ module Litestream
 
       private
 
-      def execute(command, argv = {}, database = nil, async: true, hashify: false)
+      def execute(command, argv = {}, database = nil, async: false, hashify: false)
         cmd = prepare(command, argv, database)
         run(cmd, async: async, hashify: hashify)
       end
@@ -157,7 +157,7 @@ module Litestream
         cmd
       end
 
-      def run(cmd, async: true, hashify: false)
+      def run(cmd, async: false, hashify: false)
         if async
           # To release the resources of the Ruby process, just fork and exit.
           # The forked process executes litestream and replaces itself.
