@@ -137,6 +137,11 @@ module Litestream
       private
 
       def execute(command, argv = {}, database = nil, async: true)
+        cmd = prepare(command, argv, database)
+        run(cmd, async: async)
+      end
+
+      def prepare(command, argv = {}, database = nil)
         if Litestream.configuration
           ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.configuration.replica_bucket
           ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.configuration.replica_key_id
@@ -149,13 +154,22 @@ module Litestream
         cmd = [executable, command, *args, database].compact
         puts cmd.inspect if ENV["DEBUG"]
 
+        cmd
+      end
+
+      def run(cmd, async: true)
         if async
           # To release the resources of the Ruby process, just fork and exit.
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          %x{ #{cmd.join(" ")} }
+          text_table_to_hashes(%x{ #{cmd.join(" ")} })
         end
+      end
+
+      def text_table_to_hashes(string)
+        keys, *rows = string.split("\n").map { _1.split(/\s+/) }
+        rows.map { keys.zip(_1).to_h }
       end
     end
   end

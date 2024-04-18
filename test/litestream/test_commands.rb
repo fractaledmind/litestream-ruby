@@ -20,20 +20,22 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestReplicateCommand < TestCommands
     def test_replicate_with_no_options
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
         assert_equal 2, argv.size
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.replicate
       end
     end
 
     def test_replicate_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
         assert_equal 3, argv.size
@@ -41,13 +43,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "--no-expand-env", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.replicate("--no-expand-env" => nil)
       end
     end
 
     def test_replicate_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
         assert_equal 4, argv.size
@@ -56,20 +59,21 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.replicate("--exec" => "command")
       end
     end
 
     def test_replicate_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
         assert_equal 2, argv.size
         assert_equal "--config", argv[0]
         assert_equal "CONFIG", argv[1]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.replicate("--config" => "CONFIG")
       end
     end
@@ -79,7 +83,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
       end
 
@@ -93,7 +97,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
       end
 
@@ -107,7 +111,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
       end
 
@@ -123,7 +127,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
       end
 
@@ -143,7 +147,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
       end
 
@@ -155,7 +159,8 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestRestoreCommand < TestCommands
     def test_restore_with_no_options
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 5, argv.size
@@ -165,13 +170,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
         assert_equal "db/test.sqlite3", argv[4]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3")
       end
     end
 
     def test_restore_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 6, argv.size
@@ -182,13 +188,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--if-db-not-exists", argv[4]
         assert_equal "db/test.sqlite3", argv[5]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--if-db-not-exists" => nil)
       end
     end
 
     def test_restore_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 7, argv.size
@@ -200,13 +207,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal 10, argv[5]
         assert_equal "db/test.sqlite3", argv[6]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--parallelism" => 10)
       end
     end
 
     def test_restore_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 5, argv.size
@@ -216,7 +224,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
         assert_equal "db/test.sqlite3", argv[4]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--config" => "CONFIG")
       end
     end
@@ -226,7 +234,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
       end
 
@@ -240,7 +248,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
       end
 
@@ -254,7 +262,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
       end
 
@@ -270,7 +278,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
       end
 
@@ -290,7 +298,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
       end
 
@@ -302,20 +310,22 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestDatabasesCommand < TestCommands
     def test_databases_with_no_options
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
         assert_equal 2, argv.size
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.databases
       end
     end
 
     def test_databases_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
         assert_equal 3, argv.size
@@ -323,13 +333,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "--no-expand-env", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.databases("--no-expand-env" => nil)
       end
     end
 
     def test_databases_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
         assert_equal 4, argv.size
@@ -338,20 +349,21 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.databases("--exec" => "command")
       end
     end
 
     def test_databases_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
         assert_equal 2, argv.size
         assert_equal "--config", argv[0]
         assert_equal "CONFIG", argv[1]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.databases("--config" => "CONFIG")
       end
     end
@@ -361,7 +373,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
       end
 
@@ -375,7 +387,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
       end
 
@@ -389,7 +401,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
       end
 
@@ -405,7 +417,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
       end
 
@@ -425,7 +437,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
       end
 
@@ -437,7 +449,8 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestGenerationsCommand < TestCommands
     def test_generations_with_no_options
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
         assert_equal 3, argv.size
@@ -445,13 +458,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "db/test.sqlite3", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.generations("db/test.sqlite3")
       end
     end
 
     def test_generations_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
         assert_equal 4, argv.size
@@ -460,13 +474,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--if-db-not-exists", argv[2]
         assert_equal "db/test.sqlite3", argv[3]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.generations("db/test.sqlite3", "--if-db-not-exists" => nil)
       end
     end
 
     def test_generations_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
         assert_equal 5, argv.size
@@ -476,13 +491,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal 10, argv[3]
         assert_equal "db/test.sqlite3", argv[4]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.generations("db/test.sqlite3", "--parallelism" => 10)
       end
     end
 
     def test_generations_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
         assert_equal 3, argv.size
@@ -490,7 +506,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "CONFIG", argv[1]
         assert_equal "db/test.sqlite3", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.generations("db/test.sqlite3", "--config" => "CONFIG")
       end
     end
@@ -500,7 +516,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
       end
 
@@ -514,7 +530,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
       end
 
@@ -528,7 +544,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
       end
 
@@ -544,7 +560,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
       end
 
@@ -564,7 +580,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
       end
 
@@ -576,7 +592,8 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestSnapshotsCommand < TestCommands
     def test_snapshots_with_no_options
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
         assert_equal 3, argv.size
@@ -584,13 +601,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "db/test.sqlite3", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
     end
 
     def test_snapshots_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
         assert_equal 4, argv.size
@@ -599,13 +617,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--if-db-not-exists", argv[2]
         assert_equal "db/test.sqlite3", argv[3]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.snapshots("db/test.sqlite3", "--if-db-not-exists" => nil)
       end
     end
 
     def test_snapshots_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
         assert_equal 5, argv.size
@@ -615,13 +634,14 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal 10, argv[3]
         assert_equal "db/test.sqlite3", argv[4]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.snapshots("db/test.sqlite3", "--parallelism" => 10)
       end
     end
 
     def test_snapshots_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
         assert_equal 3, argv.size
@@ -629,7 +649,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "CONFIG", argv[1]
         assert_equal "db/test.sqlite3", argv[2]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         Litestream::Commands.snapshots("db/test.sqlite3", "--config" => "CONFIG")
       end
     end
@@ -639,7 +659,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
 
@@ -653,7 +673,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
 
@@ -667,7 +687,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
 
@@ -683,7 +703,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
 
@@ -703,7 +723,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :exec, nil do
+      Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
       end
 
@@ -727,7 +747,8 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_verify_with_restore_not_succeeding
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 5, argv.size
@@ -735,9 +756,9 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "-o", argv[2]
         assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
-        assert_equal "db/test.sqlite3", argv[4]
+        assert_equal "test/dummy/db/test.sqlite3", argv[4]
       end
-      Litestream::Commands.stub :exec, stub do
+      Litestream::Commands.stub :run, stub do
         assert_raises Litestream::Commands::BackupFailedException do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -745,7 +766,8 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_verify_with_restore_succeeding
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 5, argv.size
@@ -756,7 +778,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "test/dummy/db/test.sqlite3", argv[4]
       end
       result = nil
-      Litestream::Commands.stub :system, stub do
+      Litestream::Commands.stub :run, stub do
         File.stub :exist?, true do
           result = Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -769,7 +791,8 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_verify_with_boolean_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 6, argv.size
@@ -781,7 +804,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "test/dummy/db/test.sqlite3", argv[5]
       end
       result = nil
-      Litestream::Commands.stub :system, stub do
+      Litestream::Commands.stub :run, stub do
         File.stub :exist?, true do
           result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--if-db-not-exists" => nil)
         end
@@ -794,7 +817,8 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_verify_with_string_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 7, argv.size
@@ -807,7 +831,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "test/dummy/db/test.sqlite3", argv[6]
       end
       result = nil
-      Litestream::Commands.stub :system, stub do
+      Litestream::Commands.stub :run, stub do
         File.stub :exist?, true do
           result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--parallelism" => 10)
         end
@@ -820,7 +844,8 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_verify_with_config_option
-      stub = proc do |executable, command, *argv|
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
         assert_equal 5, argv.size
@@ -831,7 +856,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "test/dummy/db/test.sqlite3", argv[4]
       end
       result = nil
-      Litestream::Commands.stub :system, stub do
+      Litestream::Commands.stub :run, stub do
         File.stub :exist?, true do
           result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--config" => "CONFIG")
         end
@@ -848,7 +873,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_bucket = "mybkt"
       end
 
-      Litestream::Commands.stub :system, nil do
+      Litestream::Commands.stub :run, "" do
         File.stub :exist?, true do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -864,7 +889,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_key_id = "mykey"
       end
 
-      Litestream::Commands.stub :system, nil do
+      Litestream::Commands.stub :run, "" do
         File.stub :exist?, true do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -880,7 +905,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :system, nil do
+      Litestream::Commands.stub :run, "" do
         File.stub :exist?, true do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -898,7 +923,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :system, nil do
+      Litestream::Commands.stub :run, "" do
         File.stub :exist?, true do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
@@ -920,7 +945,7 @@ class TestCommands < ActiveSupport::TestCase
         config.replica_access_key = "access"
       end
 
-      Litestream::Commands.stub :system, nil do
+      Litestream::Commands.stub :run, "" do
         File.stub :exist?, true do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
