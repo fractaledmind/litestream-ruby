@@ -21,8 +21,9 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    options.symbolize_keys!
 
-    Litestream::Commands.replicate(**options)
+    Litestream::Commands.replicate(async: true, **options)
   end
 
   desc "Restore a SQLite database from a Litestream replica, e.g. rake litestream:restore -- -database=storage/production.sqlite3"
@@ -33,8 +34,10 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    database = options.delete("--database") || options.delete("-database")
+    options.symbolize_keys!
 
-    Litestream::Commands.restore(options.delete("--database") || options.delete("-database"), **options)
+    Litestream::Commands.restore(database, async: true, **options)
   end
 
   desc "List all databases and associated replicas in the config file, e.g. rake litestream:databases -- -no-expand-env"
@@ -45,8 +48,9 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    options.symbolize_keys!
 
-    Litestream::Commands.databases(**options)
+    Litestream::Commands.databases(async: true, **options)
   end
 
   desc "List all generations for a database or replica, e.g. rake litestream:generations -- -database=storage/production.sqlite3"
@@ -57,8 +61,10 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    database = options.delete("--database") || options.delete("-database")
+    options.symbolize_keys!
 
-    Litestream::Commands.generations(options.delete("--database") || options.delete("-database"), **options)
+    Litestream::Commands.generations(database, async: true, **options)
   end
 
   desc "List all snapshots for a database or replica, e.g. rake litestream:snapshots -- -database=storage/production.sqlite3"
@@ -69,8 +75,10 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    database = options.delete("--database") || options.delete("-database")
+    options.symbolize_keys!
 
-    Litestream::Commands.snapshots(options.delete("--database") || options.delete("-database"), **options)
+    Litestream::Commands.snapshots(database, async: true, **options)
   end
 
   desc "verify backup of SQLite database from a Litestream replica, e.g. rake litestream:verify -- -database=storage/production.sqlite3"
@@ -81,8 +89,10 @@ namespace :litestream do
         .map { |pair| pair.split("=") }
         .each { |opt| options[opt[0]] = opt[1] || nil }
     end
+    database = options.delete("--database") || options.delete("-database")
+    options.symbolize_keys!
 
-    result = Litestream::Commands.verify(options.delete("--database") || options.delete("-database"), **options)
+    result = Litestream::Commands.verify(database, async: true, **options)
 
     puts <<~TXT if result
 

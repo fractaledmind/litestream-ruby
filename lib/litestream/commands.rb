@@ -76,11 +76,11 @@ module Litestream
         exe_file
       end
 
-      def replicate(async: true, **argv)
-        execute("replicate", argv, async: async)
+      def replicate(async: false, **argv)
+        execute("replicate", argv, async: async, hashify: false)
       end
 
-      def restore(database, async: true, **argv)
+      def restore(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
 
         dir, file = File.split(database)
@@ -93,28 +93,12 @@ module Litestream
           "-o" => backup
         }.merge(argv)
 
-        execute("restore", args, database, async: async)
+        execute("restore", args, database, async: async, hashify: false)
 
         backup
       end
 
-      def databases(async: true, **argv)
-        execute("databases", argv, async: async)
-      end
-
-      def generations(database, async: true, **argv)
-        raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
-
-        execute("generations", argv, database, async: async)
-      end
-
-      def snapshots(database, async: true, **argv)
-        raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
-
-        execute("snapshots", argv, database, async: async)
-      end
-
-      def verify(database, async: true, **argv)
+      def verify(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
 
         backup = restore(database, async: false, **argv)
@@ -129,14 +113,35 @@ module Litestream
         Dir.glob(backup + "*").each { |file| File.delete(file) }
 
         {
-          size: {original: original_size, restored: restored_size},
-          tables: {original: original_tables_count, restored: restored_tables_count}
+          "size" => {"original" => original_size, "restored" => restored_size},
+          "tables" => {"original" => original_tables_count, "restored" => restored_tables_count}
         }
+      end
+
+      def databases(async: false, **argv)
+        execute("databases", argv, async: async, hashify: true)
+      end
+
+      def generations(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
+
+        execute("generations", argv, database, async: async, hashify: true)
+      end
+
+      def snapshots(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
+
+        execute("snapshots", argv, database, async: async, hashify: true)
       end
 
       private
 
-      def execute(command, argv = {}, database = nil, async: true)
+      def execute(command, argv = {}, database = nil, async: false, hashify: false)
+        cmd = prepare(command, argv, database)
+        run(cmd, async: async, hashify: hashify)
+      end
+
+      def prepare(command, argv = {}, database = nil)
         if Litestream.configuration
           ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.configuration.replica_bucket
           ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.configuration.replica_key_id
@@ -149,13 +154,23 @@ module Litestream
         cmd = [executable, command, *args, database].compact
         puts cmd.inspect if ENV["DEBUG"]
 
+        cmd
+      end
+
+      def run(cmd, async: false, hashify: false)
         if async
           # To release the resources of the Ruby process, just fork and exit.
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          system(*cmd)
+          out = `#{cmd.join(" ")}`
+          text_table_to_hashes(out) if hashify
         end
+      end
+
+      def text_table_to_hashes(string)
+        keys, *rows = string.split("\n").map { _1.split(/\s+/) }
+        rows.map { keys.zip(_1).to_h }
       end
     end
   end
