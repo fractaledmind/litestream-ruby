@@ -129,8 +129,8 @@ module Litestream
         Dir.glob(backup + "*").each { |file| File.delete(file) }
 
         {
-          size: {original: original_size, restored: restored_size},
-          tables: {original: original_tables_count, restored: restored_tables_count}
+          "size" => {"original" => original_size, "restored" => restored_size},
+          "tables" => {"original" => original_tables_count, "restored" => restored_tables_count}
         }
       end
 
