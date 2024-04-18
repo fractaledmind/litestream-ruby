@@ -98,22 +98,6 @@ module Litestream
         backup
       end
 
-      def databases(async: false, **argv)
-        execute("databases", argv, async: async, hashify: true)
-      end
-
-      def generations(database, async: false, **argv)
-        raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
-
-        execute("generations", argv, database, async: async, hashify: true)
-      end
-
-      def snapshots(database, async: false, **argv)
-        raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
-
-        execute("snapshots", argv, database, async: async, hashify: true)
-      end
-
       def verify(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
 
@@ -132,6 +116,22 @@ module Litestream
           "size" => {"original" => original_size, "restored" => restored_size},
           "tables" => {"original" => original_tables_count, "restored" => restored_tables_count}
         }
+      end
+
+      def databases(async: false, **argv)
+        execute("databases", argv, async: async, hashify: true)
+      end
+
+      def generations(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
+
+        execute("generations", argv, database, async: async, hashify: true)
+      end
+
+      def snapshots(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
+
+        execute("snapshots", argv, database, async: async, hashify: true)
       end
 
       private
