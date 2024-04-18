@@ -77,7 +77,7 @@ module Litestream
       end
 
       def replicate(async: true, **argv)
-        execute("replicate", argv, async: async)
+        execute("replicate", argv, async: async, hashify: false)
       end
 
       def restore(database, async: true, **argv)
@@ -93,25 +93,25 @@ module Litestream
           "-o" => backup
         }.merge(argv)
 
-        execute("restore", args, database, async: async)
+        execute("restore", args, database, async: async, hashify: false)
 
         backup
       end
 
       def databases(async: true, **argv)
-        execute("databases", argv, async: async)
+        execute("databases", argv, async: async, hashify: true)
       end
 
       def generations(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database, async: async)
+        execute("generations", argv, database, async: async, hashify: true)
       end
 
       def snapshots(database, async: true, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("snapshots", argv, database, async: async)
+        execute("snapshots", argv, database, async: async, hashify: true)
       end
 
       def verify(database, async: true, **argv)
@@ -136,9 +136,9 @@ module Litestream
 
       private
 
-      def execute(command, argv = {}, database = nil, async: true)
+      def execute(command, argv = {}, database = nil, async: true, hashify: false)
         cmd = prepare(command, argv, database)
-        run(cmd, async: async)
+        run(cmd, async: async, hashify: hashify)
       end
 
       def prepare(command, argv = {}, database = nil)
@@ -157,13 +157,14 @@ module Litestream
         cmd
       end
 
-      def run(cmd, async: true)
+      def run(cmd, async: true, hashify: false)
         if async
           # To release the resources of the Ruby process, just fork and exit.
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          text_table_to_hashes(%x{ #{cmd.join(" ")} })
+          out = `#{cmd.join(" ")}`
+          text_table_to_hashes(out) if hashify
         end
       end
 
