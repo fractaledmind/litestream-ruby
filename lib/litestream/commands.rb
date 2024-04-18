@@ -154,7 +154,7 @@ module Litestream
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          system(*cmd)
+          %x{ #{cmd.join(" ")} }
         end
       end
     end
