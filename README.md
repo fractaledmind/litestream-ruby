@@ -241,7 +241,48 @@ replica  generation        index  size     created
 s3       a295b16a796689f3  1      4645465  2024-04-17T00:01:19Z
 ```
 
-### Additional commands
+### Running commands from Ruby
+
+In addition to the provided rake tasks, you can also run Litestream commands directly from Ruby. The gem provides a `Litestream::Commands` module that wraps the Litestream CLI commands. This is particularly useful for the introspection commands, as you can use the output in your Ruby code.
+
+The `Litestream::Commands.databases` method returns an array of hashes with the "path" and "replicas" keys for each database:
+
+```ruby
+Litestream::Commands.databases
+# => [{"path"=>"/Users/you/Code/your-app/storage/production.sqlite3", "replicas"=>"s3"}]
+```
+
+The `Litestream::Commands.generations` method returns an array of hashes with the "name", "generation", "lag", "start", and "end" keys for each generation:
+
+```ruby
+Litestream::Commands.generations('storage/production.sqlite3')
+# => [{"name"=>"s3", "generation"=>"5f4341bc3d22d615", "lag"=>"3s", "start"=>"2024-04-17T19:48:09Z", "end"=>"2024-04-17T19:48:09Z"}]
+```
+
+The `Litestream::Commands.snapshots` method returns an array of hashes with the "replica", "generation", "index", "size", and "created" keys for each snapshot:
+
+```ruby
+Litestream::Commands.snapshots('storage/production.sqlite3')
+# => [{"replica"=>"s3", "generation"=>"5f4341bc3d22d615", "index"=>"0", "size"=>"4645465", "created"=>"2024-04-17T19:48:09Z"}]
+```
+
+You can also restore a database programatically using the `Litestream::Commands.restore` method, which returns the path to the restored database:
+
+```ruby
+Litestream::Commands.restore('storage/production.sqlite3')
+# => "storage/production-20240418090048.sqlite3"
+```
+
+Finally, you can verify the integrity of a restored database using the `Litestream::Commands.verify` method, which returns a hash with the "size" and "tables" keys for the original and restored databases:
+
+```ruby
+Litestream::Commands.verify('storage/production.sqlite3')
+# => {"size"=>{"original"=>21688320, "restored"=>21688320}, "tables"=>{"original"=>9, "restored"=>9}}
+```
+
+You _can_ start the replication process using the `Litestream::Commands.replicate` method, but this is not recommended. The replication process should be managed by Litestream itself, and you should not need to manually start it.
+
+### Running commands from CLI
 
 The rake tasks are the recommended way to interact with the Litestream utility in your Rails application or Ruby project. But, you _can_ work directly with the Litestream CLI. Since the gem installs the native executable via Bundler, the `litestream` command will be available in your `PATH`.
 
