@@ -1,5 +1,4 @@
 module Litestream
-  # constants describing the upstream tailwindcss project
   module Upstream
     VERSION = "v0.3.13"
 
