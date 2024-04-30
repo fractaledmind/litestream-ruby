@@ -19,4 +19,5 @@ rake package
 for gem in pkg/litestream-$VERSION*.gem ; do
   gem push "$gem" --host https://rubygems.org
   rm "$gem"
+  rm -rf "${gem/.gem/}"
 done
