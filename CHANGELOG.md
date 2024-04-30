@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.5.5] - 2024-04-30
+
+- Fix bug with forwarding arguments to the Rake tasks being symbols when passed to `exec` ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/23))
+
 ## [0.5.4] - 2024-04-18
 
 - Remove old usage of config.database_path ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/18))
