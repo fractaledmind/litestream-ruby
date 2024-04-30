@@ -48,7 +48,7 @@ jobs:
           name: gem-ruby
           path: pkg
       - run: "gem install pkg/litestream-*.gem"
-      - run: "litestream version"
+      - run: "litestream 2>&1 | fgrep 'ERROR: Cannot find the litestream executable'"
 
   linux-x86_64-install:
     needs: ["package"]
@@ -75,8 +75,14 @@ jobs:
         with:
           name: gem-arm64-linux
           path: pkg
-      - run: "gem install pkg/litestream-*.gem"
-      - run: "litestream version"
+      - run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker run --rm -v "$(pwd):/test" -w /test --platform=linux/arm/v7 ruby:3.2 \
+            /bin/bash -c "
+              set -ex
+              gem install pkg/litestream-*.gem
+              litestream version
+            "
 
   darwin-x86_64-install:
     needs: ["package"]
