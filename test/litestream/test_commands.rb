@@ -76,7 +76,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "command", argv[3]
       end
       Litestream::Commands.stub :run, stub do
-        Litestream::Commands.replicate(:"--exec" => "command")
+        Litestream::Commands.replicate("--exec": "command")
       end
     end
 
