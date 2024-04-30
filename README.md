@@ -16,7 +16,7 @@ After installing the gem, run the installer:
 
     $ rails generate litestream:install
 
-The installer will create a configuration file at `config/litestream.yml`, an initializer file for configuring the gem at `config/initializers/litestream.rb`, as well as a `Procfile` so that you can run the Litestream replication process alongside your Rails application in production.
+The installer will create a configuration file at `config/litestream.yml`, an initializer file for configuring the gem at `config/initializers/litestream.rb`, as well as a `Procfile` so that you can run the Litestream replication process alongside your Rails application in production. Alternatively, you can let Puma manage the Litestream replication process using the [Puma plugin](#puma-plugin).
 
 This gem wraps the standalone executable version of the [Litestream](https://litestream.io/install/source/) utility. These executables are platform specific, so there are actually separate underlying gems per platform, but the correct gem will automatically be picked for your platform. Litestream itself doesn't support Windows, so this gem doesn't either.
 
@@ -327,6 +327,13 @@ time=YYYY-MM-DDTHH:MM:SS level=INFO msg=litestream version=v0.3.xx
 time=YYYY-MM-DDTHH:MM:SS level=INFO msg="initialized db" path=/path/to/your/app/storage/development.sqlite3
 time=YYYY-MM-DDTHH:MM:SS level=INFO msg="replicating to" name=s3 type=s3 sync-interval=1s bucket=mybkt path="" region=us-east-1 endpoint=http://localhost:9000
 ```
+
+## Puma plugin
+We provide a Puma plugin if you want to run the Litestream replication process together with Puma and have Puma monitor and manage it. You just need to add
+```ruby
+plugin :litestream if rails_env == "production"
+```
+to your `puma.rb` configuration.
 
 ## Development
 
