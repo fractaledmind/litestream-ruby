@@ -8,14 +8,14 @@ jobs:
         platform: ["x86_64-darwin", "x86_64-linux"]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.0"
           bundler: latest
           bundler-cache: true
       - run: "bundle exec rake gem:${{matrix.platform}}"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: gem-${{matrix.platform}}
           path: pkg
@@ -28,7 +28,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.0"
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: gem-x86_64-linux
           path: pkg
@@ -42,7 +42,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.0"
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: gem-x86_64-darwin
           path: pkg

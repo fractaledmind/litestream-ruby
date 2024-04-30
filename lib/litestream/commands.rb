@@ -150,7 +150,7 @@ module Litestream
 
         args = {
           "--config" => Rails.root.join("config", "litestream.yml").to_s
-        }.merge(argv).to_a.flatten.compact
+        }.merge(argv.stringify_keys).to_a.flatten.compact
         cmd = [executable, command, *args, database].compact
         puts cmd.inspect if ENV["DEBUG"]
 
