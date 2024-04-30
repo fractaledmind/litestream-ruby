@@ -179,12 +179,10 @@ class TestCommands < ActiveSupport::TestCase
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
-        assert_equal 5, argv.size
+        assert_equal 3, argv.size
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
-        assert_equal "-o", argv[2]
-        assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
-        assert_equal "db/test.sqlite3", argv[4]
+        assert_equal "db/test.sqlite3", argv[2]
       end
       Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -196,13 +194,11 @@ class TestCommands < ActiveSupport::TestCase
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
-        assert_equal 6, argv.size
+        assert_equal 4, argv.size
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
-        assert_equal "-o", argv[2]
-        assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
-        assert_equal "--if-db-not-exists", argv[4]
-        assert_equal "db/test.sqlite3", argv[5]
+        assert_equal "--if-db-not-exists", argv[2]
+        assert_equal "db/test.sqlite3", argv[3]
       end
       Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--if-db-not-exists" => nil)
@@ -214,14 +210,12 @@ class TestCommands < ActiveSupport::TestCase
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
-        assert_equal 7, argv.size
+        assert_equal 5, argv.size
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
-        assert_equal "-o", argv[2]
-        assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
-        assert_equal "--parallelism", argv[4]
-        assert_equal 10, argv[5]
-        assert_equal "db/test.sqlite3", argv[6]
+        assert_equal "--parallelism", argv[2]
+        assert_equal 10, argv[3]
+        assert_equal "db/test.sqlite3", argv[4]
       end
       Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--parallelism" => 10)
@@ -233,12 +227,10 @@ class TestCommands < ActiveSupport::TestCase
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
-        assert_equal 5, argv.size
+        assert_equal 3, argv.size
         assert_equal "--config", argv[0]
         assert_equal "CONFIG", argv[1]
-        assert_equal "-o", argv[2]
-        assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
-        assert_equal "db/test.sqlite3", argv[4]
+        assert_equal "db/test.sqlite3", argv[2]
       end
       Litestream::Commands.stub :run, stub do
         Litestream::Commands.restore("db/test.sqlite3", "--config" => "CONFIG")
