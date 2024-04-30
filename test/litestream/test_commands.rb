@@ -64,6 +64,22 @@ class TestCommands < ActiveSupport::TestCase
       end
     end
 
+    def test_replicate_with_symbol_option
+      stub = proc do |cmd, async|
+        executable, command, *argv = cmd
+        assert_match Regexp.new("exe/test/litestream"), executable
+        assert_equal "replicate", command
+        assert_equal 4, argv.size
+        assert_equal "--config", argv[0]
+        assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
+        assert_equal "--exec", argv[2]
+        assert_equal "command", argv[3]
+      end
+      Litestream::Commands.stub :run, stub do
+        Litestream::Commands.replicate(:"--exec" => "command")
+      end
+    end
+
     def test_replicate_with_config_option
       stub = proc do |cmd, async|
         executable, command, *argv = cmd
