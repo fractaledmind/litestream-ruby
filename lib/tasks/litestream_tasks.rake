@@ -97,14 +97,14 @@ namespace :litestream do
     puts <<~TXT if result
 
       size
-        original          #{result[:size][:original]}
-        restored          #{result[:size][:restored]}
-        delta             #{result[:size][:original] - result[:size][:restored]}
+        original          #{result["size"]["original"]}
+        restored          #{result["size"]["restored"]}
+        delta             #{result["size"]["original"] - result["size"]["restored"]}
 
       tables
-        original          #{result[:tables][:original]}
-        restored          #{result[:tables][:restored]}
-        delta             #{result[:tables][:original] - result[:tables][:restored]}
+        original          #{result["tables"]["original"]}
+        restored          #{result["tables"]["restored"]}
+        delta             #{result["tables"]["original"] - result["tables"]["restored"]}
     TXT
   end
 end

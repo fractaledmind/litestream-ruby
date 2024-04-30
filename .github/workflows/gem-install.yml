@@ -1,17 +1,32 @@
 name: Native Gems
-on: [push, pull_request]
+concurrency:
+  group: "${{github.workflow}}-${{github.ref}}"
+  cancel-in-progress: true
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - v*.*.*
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - '*'
+
 jobs:
   package:
     strategy:
       fail-fast: false
       matrix:
-        platform: ["x86_64-darwin", "x86_64-linux"]
+        platform: ["ruby", "x86_64-darwin", "arm64-darwin", "x86_64-linux", "arm64-linux"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: rm Gemfile.lock
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.0"
+          ruby-version: "3.2"
           bundler: latest
           bundler-cache: true
       - run: "bundle exec rake gem:${{matrix.platform}}"
@@ -21,13 +36,27 @@ jobs:
           path: pkg
           retention-days: 1
 
-  linux-install:
+  vanilla-install:
     needs: ["package"]
     runs-on: ubuntu-latest
     steps:
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.0"
+          ruby-version: "3.2"
+      - uses: actions/download-artifact@v4
+        with:
+          name: gem-ruby
+          path: pkg
+      - run: "gem install pkg/litestream-*.gem"
+      - run: "litestream 2>&1 | fgrep 'ERROR: Cannot find the litestream executable'"
+
+  linux-x86_64-install:
+    needs: ["package"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
       - uses: actions/download-artifact@v4
         with:
           name: gem-x86_64-linux
@@ -35,16 +64,50 @@ jobs:
       - run: "gem install pkg/litestream-*.gem"
       - run: "litestream version"
 
-  darwin-install:
+  # linux-arm64-install:
+  #   needs: ["package"]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.2"
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: gem-arm64-linux
+  #         path: pkg
+  #     - run: |
+  #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  #         docker run --rm -v "$(pwd):/test" -w /test --platform=linux/arm/v7 ruby:3.2 \
+  #           /bin/bash -c "
+  #             set -ex
+  #             gem install pkg/litestream-*.gem
+  #             litestream version
+  #           "
+
+  darwin-x86_64-install:
     needs: ["package"]
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.0"
+          ruby-version: "3.2"
       - uses: actions/download-artifact@v4
         with:
           name: gem-x86_64-darwin
+          path: pkg
+      - run: "gem install pkg/litestream-*.gem"
+      - run: "litestream version"
+
+  darwin-arm64-install:
+    needs: ["package"]
+    runs-on: macos-14
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+      - uses: actions/download-artifact@v4
+        with:
+          name: gem-arm64-darwin
           path: pkg
       - run: "gem install pkg/litestream-*.gem"
       - run: "litestream version"

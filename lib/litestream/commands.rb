@@ -82,26 +82,27 @@ module Litestream
 
       def restore(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
+        argv.stringify_keys!
+
+        execute("restore", argv, database, async: async, hashify: false)
+
+        argv["-o"] || database
+      end
+
+      def verify(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
+        argv.stringify_keys!
 
         dir, file = File.split(database)
         ext = File.extname(file)
         base = File.basename(file, ext)
         now = Time.now.utc.strftime("%Y%m%d%H%M%S")
         backup = File.join(dir, "#{base}-#{now}#{ext}")
-
         args = {
           "-o" => backup
         }.merge(argv)
 
-        execute("restore", args, database, async: async, hashify: false)
-
-        backup
-      end
-
-      def verify(database, async: false, **argv)
-        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
-
-        backup = restore(database, async: false, **argv)
+        backup = restore(database, async: false, **args)
 
         raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
 
