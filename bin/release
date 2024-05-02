@@ -20,9 +20,6 @@ for gem in pkg/litestream-$VERSION*.gem ; do
   gem push "$gem" --host https://rubygems.org
   if [ $? -eq 0 ]; then
     rm "$gem"
-    pkg="${gem/.gem/}"
-    rm -rf $pkg
-    arch="${pkg/pkg\/litestream-$VERSION-/}"
-    rm exe/$arch/litestream
+    rm -rf "${gem/.gem/}"
   fi
 done
