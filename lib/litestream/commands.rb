@@ -1,4 +1,5 @@
 require_relative "upstream"
+require "logfmt"
 
 module Litestream
   module Commands
