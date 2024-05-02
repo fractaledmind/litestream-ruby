@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## [0.7.2] - 2024-05-02
+
+- Ensure that the `Logfmt` gem is available to parse the Litestream command output
+
+## [0.7.1] - 2024-05-02
+
+- Fix typo in executing Litestream commands
+
 ## [0.7.0] - 2024-05-02
 
 - Commands return parsed Litestream output or error if Litestream errors ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/25))
