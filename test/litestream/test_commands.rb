@@ -5,7 +5,8 @@ class TestCommands < ActiveSupport::TestCase
     result = nil
     Litestream::Commands.stub :fork, nil do
       Litestream::Commands.stub :executable, "exe/test/litestream" do
-        capture_io { result = super }
+        # capture_io { result = super }
+        result = super
       end
     end
     result
@@ -765,9 +766,11 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "-o", argv[2]
         assert_match Regexp.new('db/test-\d{14}.sqlite3'), argv[3]
         assert_equal "test/dummy/db/test.sqlite3", argv[4]
+
+        [{"level" => "ERROR", "error" => "cannot restore"}]
       end
       Litestream::Commands.stub :run, stub do
-        assert_raises Litestream::Commands::BackupFailedException do
+        assert_raises Litestream::Commands::CommandFailedException do
           Litestream::Commands.verify("test/dummy/db/test.sqlite3")
         end
       end
@@ -787,9 +790,7 @@ class TestCommands < ActiveSupport::TestCase
       end
       result = nil
       Litestream::Commands.stub :run, stub do
-        File.stub :exist?, true do
-          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        result = Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_equal 20480, result["size"]["original"]
@@ -813,9 +814,7 @@ class TestCommands < ActiveSupport::TestCase
       end
       result = nil
       Litestream::Commands.stub :run, stub do
-        File.stub :exist?, true do
-          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--if-db-not-exists" => nil)
-        end
+        result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--if-db-not-exists" => nil)
       end
 
       assert_equal 20480, result["size"]["original"]
@@ -840,9 +839,7 @@ class TestCommands < ActiveSupport::TestCase
       end
       result = nil
       Litestream::Commands.stub :run, stub do
-        File.stub :exist?, true do
-          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--parallelism" => 10)
-        end
+        result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--parallelism" => 10)
       end
 
       assert_equal 20480, result["size"]["original"]
@@ -865,9 +862,7 @@ class TestCommands < ActiveSupport::TestCase
       end
       result = nil
       Litestream::Commands.stub :run, stub do
-        File.stub :exist?, true do
-          result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--config" => "CONFIG")
-        end
+        result = Litestream::Commands.verify("test/dummy/db/test.sqlite3", "--config" => "CONFIG")
       end
 
       assert_equal 20480, result["size"]["original"]
@@ -882,9 +877,7 @@ class TestCommands < ActiveSupport::TestCase
       end
 
       Litestream::Commands.stub :run, "" do
-        File.stub :exist?, true do
-          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
@@ -898,9 +891,7 @@ class TestCommands < ActiveSupport::TestCase
       end
 
       Litestream::Commands.stub :run, "" do
-        File.stub :exist?, true do
-          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
@@ -914,9 +905,7 @@ class TestCommands < ActiveSupport::TestCase
       end
 
       Litestream::Commands.stub :run, "" do
-        File.stub :exist?, true do
-          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
@@ -932,9 +921,7 @@ class TestCommands < ActiveSupport::TestCase
       end
 
       Litestream::Commands.stub :run, "" do
-        File.stub :exist?, true do
-          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
@@ -954,9 +941,7 @@ class TestCommands < ActiveSupport::TestCase
       end
 
       Litestream::Commands.stub :run, "" do
-        File.stub :exist?, true do
-          Litestream::Commands.verify("test/dummy/db/test.sqlite3")
-        end
+        Litestream::Commands.verify("test/dummy/db/test.sqlite3")
       end
 
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
