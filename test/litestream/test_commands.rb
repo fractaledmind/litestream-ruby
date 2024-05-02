@@ -5,8 +5,7 @@ class TestCommands < ActiveSupport::TestCase
     result = nil
     Litestream::Commands.stub :fork, nil do
       Litestream::Commands.stub :executable, "exe/test/litestream" do
-        # capture_io { result = super }
-        result = super
+        capture_io { result = super }
       end
     end
     result
