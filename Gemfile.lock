@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    litestream (0.7.2)
+    litestream (0.8.0)
       logfmt (>= 0.0.10)
 
 GEM
