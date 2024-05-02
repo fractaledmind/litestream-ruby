@@ -84,8 +84,6 @@ module Litestream
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
         argv.stringify_keys!
 
-
-        argv["-o"] || database
         execute("restore", argv, database, async: async, tabled_output: false)
       end
 
