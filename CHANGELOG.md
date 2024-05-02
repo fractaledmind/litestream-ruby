@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+## [0.7.0] - 2024-05-02
+
+- Commands return parsed Litestream output or error if Litestream errors ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/25))
+
+## [0.6.0] - 2024-04-30
+
+- Don't provide a default output for the restore command, only for the verify command ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/24))
+- Remove a typo from upstream.rb ([@skatkov](https://github.com/fractaledmind/litestream-ruby/pull/21))
+
 ## [0.5.5] - 2024-04-30
 
 - Fix bug with forwarding arguments to the Rake tasks being symbols when passed to `exec` ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/23))
