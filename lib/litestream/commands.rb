@@ -165,7 +165,7 @@ module Litestream
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          stdout = `#{cmd.join(" ")}`.champ
+          stdout = `#{cmd.join(" ")}`.chomp
           tabled_output ? text_table_to_hashes(stdout) : stdout.split("\n").map { Logfmt.parse(_1) }
         end
       end
