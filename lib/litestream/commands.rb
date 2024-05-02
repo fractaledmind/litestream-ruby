@@ -17,8 +17,8 @@ module Litestream
     # raised when a litestream command requires a database argument but it isn't provided
     DatabaseRequiredException = Class.new(StandardError)
 
-    # raised when litestream fails to restore a database backup
-    BackupFailedException = Class.new(StandardError)
+    # raised when a litestream command fails
+    CommandFailedException = Class.new(StandardError)
 
     class << self
       def platform
@@ -101,10 +101,7 @@ module Litestream
         args = {
           "-o" => backup
         }.merge(argv)
-
-        backup = restore(database, async: false, **args)
-
-        raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
+        restore(database, async: false, **args)
 
         restored_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
         restored_size = File.size(backup)
@@ -140,6 +137,12 @@ module Litestream
       def execute(command, argv = {}, database = nil, async: false, tabled_output: false)
         cmd = prepare(command, argv, database)
         results = run(cmd, async: async, tabled_output: tabled_output)
+
+        if Array === results && results.one? && results[0]["level"] == "ERROR"
+          raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`; Reason: #{results[0]["error"]}"
+        else
+          results
+        end
       end
 
       def prepare(command, argv = {}, database = nil)
