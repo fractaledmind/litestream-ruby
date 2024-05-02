@@ -96,15 +96,20 @@ namespace :litestream do
 
     puts <<~TXT if result
 
-      size
-        original          #{result["size"]["original"]}
-        restored          #{result["size"]["restored"]}
-        delta             #{result["size"]["original"] - result["size"]["restored"]}
-
       tables
-        original          #{result["tables"]["original"]}
-        restored          #{result["tables"]["restored"]}
-        delta             #{result["tables"]["original"] - result["tables"]["restored"]}
+        original          #{result["original"]["tables"]}
+        restored          #{result["restored"]["tables"]}
+        delta             #{result["original"]["tables"] - result["restored"]["tables"]}
+
+      indexes
+        original          #{result["original"]["indexes"]}
+        restored          #{result["restored"]["indexes"]}
+        delta             #{result["original"]["indexes"] - result["restored"]["indexes"]}
+
+      rows
+        original          #{result["original"]["rows"]}
+        restored          #{result["restored"]["rows"]}
+        delta             #{result["original"]["rows"] - result["restored"]["rows"]}
     TXT
   end
 end

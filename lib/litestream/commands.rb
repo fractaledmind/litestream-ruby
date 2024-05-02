@@ -102,16 +102,29 @@ module Litestream
         }.merge(argv)
         restore(database, async: false, **args)
 
-        restored_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        restored_size = File.size(backup)
-        original_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        original_size = File.size(database)
+        restored_schema = `sqlite3 #{backup} "select name, type from sqlite_schema;"`.chomp.split("\n")
+        restored_data = restored_schema.map { _1.split("|") }.group_by(&:last)
+        restored_rows_count = restored_data["table"]&.sum { |tbl, _| `sqlite3 #{backup} "select count(*) from #{tbl};"`.chomp.to_i }
+
+        original_schema = `sqlite3 #{database} "select name, type from sqlite_schema;"`.chomp.split("\n")
+        original_data = original_schema.map { _1.split("|") }.group_by(&:last)
+        original_rows_count = original_data["table"]&.sum { |tbl, _| `sqlite3 #{database} "select count(*) from #{tbl};"`.chomp.to_i }
 
         Dir.glob(backup + "*").each { |file| File.delete(file) }
 
         {
-          "size" => {"original" => original_size, "restored" => restored_size},
-          "tables" => {"original" => original_tables_count, "restored" => restored_tables_count}
+          "original" => {
+            "path" => database,
+            "tables" => original_data["table"]&.size,
+            "indexes" => original_data["index"]&.size,
+            "rows" => original_rows_count
+          },
+          "restored" => {
+            "path" => backup,
+            "tables" => restored_data["table"]&.size,
+            "indexes" => restored_data["index"]&.size,
+            "rows" => restored_rows_count
+          }
         }
       end
 
