@@ -223,7 +223,7 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {"size" => {"original" => 1, "restored" => 1}, "tables" => {"original" => 2, "restored" => 2}}, ["db/test.sqlite3"], async: true
+      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -232,15 +232,16 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
     end
 
     def test_verify_task_with_only_database_using_double_dash
       ARGV.replace ["--", "--database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {"size" => {"original" => 1, "restored" => 1}, "tables" => {"original" => 2, "restored" => 2}}, ["db/test.sqlite3"], async: true
+      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -249,15 +250,16 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
     end
 
     def test_verify_task_with_arguments
       ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {"size" => {"original" => 1, "restored" => 1}, "tables" => {"original" => 2, "restored" => 2}}, ["db/test.sqlite3"], async: true, "--if-db-not-exists": nil
+      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true, "--if-db-not-exists": nil
 
       Litestream::Commands.stub :verify, fake do
         out, _err = capture_io do
@@ -266,8 +268,9 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       end
 
       fake.verify
-      assert_match(/size\s+original\s+1\s+restored\s+1/, out)
-      assert_match(/tables\s+original\s+2\s+restored\s+2/, out)
+      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
+      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
     end
 
     def test_verify_task_with_arguments_without_separator
