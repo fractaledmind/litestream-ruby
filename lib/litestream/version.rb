@@ -1,3 +1,3 @@
 module Litestream
-  VERSION = "0.7.0"
+  VERSION = "07.1"
 end
