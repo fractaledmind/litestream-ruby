@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.8.0] - 2024-05-02
+
+- Improve the verification task by returning number of tables, indexes, and rows ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/26))
+
 ## [0.7.2] - 2024-05-02
 
 - Ensure that the `Logfmt` gem is available to parse the Litestream command output
