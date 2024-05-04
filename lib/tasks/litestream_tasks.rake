@@ -93,23 +93,53 @@ namespace :litestream do
     options.symbolize_keys!
 
     result = Litestream::Commands.verify(database, async: true, **options)
+    original_tables = result["original"]["tables"]
+    restored_tables = result["restored"]["tables"]
+    original_indexes = result["original"]["indexes"]
+    restored_indexes = result["restored"]["indexes"]
+    original_rows = result["original"]["rows"]
+    restored_rows = result["restored"]["rows"]
 
-    puts <<~TXT if result
+    same_number_of_tables = original_tables == restored_tables
+    same_number_of_indexes = original_indexes == restored_indexes
+    same_number_of_rows = original_rows == restored_rows
 
-      tables
-        original          #{result["original"]["tables"]}
-        restored          #{result["restored"]["tables"]}
-        delta             #{result["original"]["tables"] - result["restored"]["tables"]}
-
-      indexes
-        original          #{result["original"]["indexes"]}
-        restored          #{result["restored"]["indexes"]}
-        delta             #{result["original"]["indexes"] - result["restored"]["indexes"]}
-
-      rows
-        original          #{result["original"]["rows"]}
-        restored          #{result["restored"]["rows"]}
-        delta             #{result["original"]["rows"] - result["restored"]["rows"]}
-    TXT
+    if same_number_of_tables && same_number_of_indexes && same_number_of_rows
+      puts "Backup for `#{database}` verified as consistent!\n" + [
+        "  tables   #{original_tables}",
+        "  indexes  #{original_indexes}",
+        "  rows     #{original_rows}"
+      ].compact.join("\n")
+    else
+      abort "Verification failed for #{database}:\n" + [
+        (unless same_number_of_tables
+           if original_tables > restored_tables
+             diff = original_tables - restored_tables
+             "  Backup is missing #{diff} table#{"s" if diff > 1}"
+           else
+             diff = restored_tables - original_tables
+             "  Backup has extra #{diff} table#{"s" if diff > 1}"
+           end
+         end),
+        (unless same_number_of_indexes
+           if original_indexes > restored_indexes
+             diff = original_indexes - restored_indexes
+             "  Backup is missing #{diff} index#{"es" if diff > 1}"
+           else
+             diff = restored_indexes - original_indexes
+             "  Backup has extra #{diff} index#{"es" if diff > 1}"
+           end
+         end),
+        (unless same_number_of_rows
+           if original_rows > restored_rows
+             diff = original_rows - restored_rows
+             "  Backup is missing #{diff} row#{"s" if diff > 1}"
+           else
+             diff = restored_rows - original_rows
+             "  Backup has extra #{diff} row#{"s" if diff > 1}"
+           end
+         end)
+      ].compact.join("\n")
+    end
   end
 end
