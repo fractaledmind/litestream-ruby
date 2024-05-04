@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.9.0] - 2024-05-04
+
+- Improve the verification task by exiting with a proper status code and printing out a more clear message ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/27))
+
 ## [0.8.0] - 2024-05-02
 
 - Improve the verification task by returning number of tables, indexes, and rows ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/26))
