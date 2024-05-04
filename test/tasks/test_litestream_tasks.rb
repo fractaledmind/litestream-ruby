@@ -219,74 +219,67 @@ class TestLitestreamTasks < ActiveSupport::TestCase
   end
 
   class TestVerifyTask < TestLitestreamTasks
-    def test_verify_task_with_only_database_using_single_dash
+    def test_verify_task_with_only_database_using_single_dash_failing
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
-      out = nil
-      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true
+      fake.expect :call,
+        {"original" => {"tables" => 2, "indexes" => 4, "rows" => 6}, "restored" => {"tables" => 1, "indexes" => 2, "rows" => 3}},
+        ["db/test.sqlite3"],
+        async: true
 
       Litestream::Commands.stub :verify, fake do
-        out, _err = capture_io do
-          Rake.application.invoke_task "litestream:verify"
+        error = assert_raises SystemExit do
+          capture_io { Rake.application.invoke_task "litestream:verify" }
         end
+        assert_match("Verification failed for db/test.sqlite3", error.message)
+        assert_match("Backup is missing 1 table", error.message)
+        assert_match("Backup is missing 2 indexes", error.message)
+        assert_match("Backup is missing 3 rows", error.message)
       end
 
       fake.verify
-      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
     end
 
-    def test_verify_task_with_only_database_using_double_dash
+    def test_verify_task_with_only_database_using_double_dash_failing
       ARGV.replace ["--", "--database=db/test.sqlite3"]
       fake = Minitest::Mock.new
-      out = nil
-      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true
+      fake.expect :call,
+        {"original" => {"tables" => 1, "indexes" => 2, "rows" => 3}, "restored" => {"tables" => 2, "indexes" => 4, "rows" => 6}},
+        ["db/test.sqlite3"],
+        async: true
 
       Litestream::Commands.stub :verify, fake do
-        out, _err = capture_io do
-          Rake.application.invoke_task "litestream:verify"
+        error = assert_raises SystemExit do
+          capture_io { Rake.application.invoke_task "litestream:verify" }
         end
+        assert_match("Verification failed for db/test.sqlite3", error.message)
+        assert_match("Backup has extra 1 table", error.message)
+        assert_match("Backup has extra 2 indexes", error.message)
+        assert_match("Backup has extra 3 rows", error.message)
       end
 
       fake.verify
-      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
     end
 
-    def test_verify_task_with_arguments
+    def test_verify_task_with_arguments_succeeding
       ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
       fake = Minitest::Mock.new
       out = nil
-      fake.expect :call, {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 1, "indexes" => 1, "rows" => 1}}, ["db/test.sqlite3"], async: true, "--if-db-not-exists": nil
+      fake.expect :call,
+        {"original" => {"tables" => 2, "indexes" => 2, "rows" => 2}, "restored" => {"tables" => 2, "indexes" => 2, "rows" => 2}},
+        ["db/test.sqlite3"],
+        async: true,
+        "--if-db-not-exists": nil
 
       Litestream::Commands.stub :verify, fake do
-        out, _err = capture_io do
-          Rake.application.invoke_task "litestream:verify"
-        end
+        out, _err = capture_io { Rake.application.invoke_task "litestream:verify" }
+        assert_match("Backup for `db/test.sqlite3` verified as consistent!", out)
+        assert_match("tables   2", out)
+        assert_match("indexes  2", out)
+        assert_match("rows     2", out)
       end
 
       fake.verify
-      assert_match(/tables\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/indexes\s+original\s+2\s+restored\s+1/, out)
-      assert_match(/rows\s+original\s+2\s+restored\s+1/, out)
-    end
-
-    def test_verify_task_with_arguments_without_separator
-      ARGV.replace ["-database=db/test.sqlite3"]
-      fake = Minitest::Mock.new
-      out = nil
-      fake.expect :call, nil, [nil], async: true
-
-      Litestream::Commands.stub :verify, fake do
-        out, _err = capture_io do
-          Rake.application.invoke_task "litestream:verify"
-        end
-      end
-
-      fake.verify
-      assert_equal "", out
     end
   end
 end
