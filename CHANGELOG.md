@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.10.1] - 2024-05-05
+
+- Ensure `verify!` reports the database that failed and returns true if verification passes ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/30))
+
 ## [0.10.0] - 2024-05-05
 
 - Remove the verification command and Rake task and replace with a better `Litestream.verify!` method ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/28))
