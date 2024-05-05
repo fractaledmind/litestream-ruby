@@ -39,7 +39,9 @@ module Litestream
       backup = SQLite3::Database.new(backup_path)
       result = backup.execute("SELECT 1 FROM _litestream_verification WHERE uuid = ? LIMIT 1", sentinel) # => [[1]] || []
 
-      raise VerificationFailure, "Verification failed, sentinel not found" if result.empty?
+      raise VerificationFailure, "Verification failed for `#{database_path}`" if result.empty?
+
+      true
     ensure
       database.execute("DELETE FROM _litestream_verification WHERE uuid = ?", sentinel)
       database.close
