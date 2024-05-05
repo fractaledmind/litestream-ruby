@@ -18,7 +18,7 @@ module Litestream
     def initialize
     end
   end
-  
+
   VerificationFailure = Class.new(StandardError)
 
   mattr_writer :username
@@ -45,7 +45,7 @@ module Litestream
       database.close
       Dir.glob(backup_path + "*").each { |file| File.delete(file) }
     end
-    
+
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def username
