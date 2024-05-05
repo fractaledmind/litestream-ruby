@@ -3,6 +3,7 @@ PATH
   specs:
     litestream (0.9.0)
       logfmt (>= 0.0.10)
+      sqlite3
 
 GEM
   remote: https://rubygems.org/
