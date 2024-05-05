@@ -15,19 +15,6 @@ module Litestream
         template "initializer.rb", "config/initializers/litestream.rb"
       end
 
-      def create_or_update_procfile
-        if File.exist?("Procfile")
-          append_to_file "Procfile", "litestream: bin/rails litestream:replicate"
-        else
-          create_file "Procfile" do
-            <<~PROCFILE
-              rails: bundle exec rails server --port $PORT
-              litestream: bin/rails litestream:replicate
-            PROCFILE
-          end
-        end
-      end
-
       private
 
       def production_sqlite_databases

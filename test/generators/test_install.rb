@@ -32,10 +32,5 @@ class LitestreamGeneratorTest < Rails::Generators::TestCase
       assert_match "config.replica_key_id = litestream_credentials.replica_key_id", content
       assert_match "config.replica_access_key = litestream_credentials.replica_access_key", content
     end
-
-    assert_file "Procfile" do |content|
-      assert_match "rails: bundle exec rails server --port $PORT", content
-      assert_match "litestream: bin/rails litestream:replicate", content
-    end
   end
 end
