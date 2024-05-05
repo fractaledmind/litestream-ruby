@@ -88,46 +88,6 @@ module Litestream
         execute("restore", argv, database, async: async, tabled_output: false)
       end
 
-      def verify(database, async: false, **argv)
-        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
-        argv.stringify_keys!
-
-        dir, file = File.split(database)
-        ext = File.extname(file)
-        base = File.basename(file, ext)
-        now = Time.now.utc.strftime("%Y%m%d%H%M%S")
-        backup = File.join(dir, "#{base}-#{now}#{ext}")
-        args = {
-          "-o" => backup
-        }.merge(argv)
-        restore(database, async: false, **args)
-
-        restored_schema = `sqlite3 #{backup} "select name, type from sqlite_schema;"`.chomp.split("\n")
-        restored_data = restored_schema.map { _1.split("|") }.group_by(&:last)
-        restored_rows_count = restored_data["table"]&.sum { |tbl, _| `sqlite3 #{backup} "select count(*) from #{tbl};"`.chomp.to_i }
-
-        original_schema = `sqlite3 #{database} "select name, type from sqlite_schema;"`.chomp.split("\n")
-        original_data = original_schema.map { _1.split("|") }.group_by(&:last)
-        original_rows_count = original_data["table"]&.sum { |tbl, _| `sqlite3 #{database} "select count(*) from #{tbl};"`.chomp.to_i }
-
-        Dir.glob(backup + "*").each { |file| File.delete(file) }
-
-        {
-          "original" => {
-            "path" => database,
-            "tables" => original_data["table"]&.size,
-            "indexes" => original_data["index"]&.size,
-            "rows" => original_rows_count
-          },
-          "restored" => {
-            "path" => backup,
-            "tables" => restored_data["table"]&.size,
-            "indexes" => restored_data["index"]&.size,
-            "rows" => restored_rows_count
-          }
-        }
-      end
-
       def databases(async: false, **argv)
         execute("databases", argv, async: async, tabled_output: true)
       end
