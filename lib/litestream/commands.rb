@@ -1,4 +1,5 @@
 require_relative "upstream"
+require "logfmt"
 
 module Litestream
   module Commands
@@ -17,8 +18,8 @@ module Litestream
     # raised when a litestream command requires a database argument but it isn't provided
     DatabaseRequiredException = Class.new(StandardError)
 
-    # raised when litestream fails to restore a database backup
-    BackupFailedException = Class.new(StandardError)
+    # raised when a litestream command fails
+    CommandFailedException = Class.new(StandardError)
 
     class << self
       def platform
@@ -77,69 +78,43 @@ module Litestream
       end
 
       def replicate(async: false, **argv)
-        execute("replicate", argv, async: async, hashify: false)
+        execute("replicate", argv, async: async, tabled_output: false)
       end
 
       def restore(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
         argv.stringify_keys!
 
-        execute("restore", argv, database, async: async, hashify: false)
-
-        argv["-o"] || database
-      end
-
-      def verify(database, async: false, **argv)
-        raise DatabaseRequiredException, "database argument is required for verify command, e.g. litestream:verify -- --database=path/to/database.sqlite" if database.nil? || !File.exist?(database)
-        argv.stringify_keys!
-
-        dir, file = File.split(database)
-        ext = File.extname(file)
-        base = File.basename(file, ext)
-        now = Time.now.utc.strftime("%Y%m%d%H%M%S")
-        backup = File.join(dir, "#{base}-#{now}#{ext}")
-        args = {
-          "-o" => backup
-        }.merge(argv)
-
-        backup = restore(database, async: false, **args)
-
-        raise BackupFailedException, "Failed to create backup for validation" unless File.exist?(backup)
-
-        restored_tables_count = `sqlite3 #{backup} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        restored_size = File.size(backup)
-        original_tables_count = `sqlite3 #{database} "select count(*) from sqlite_schema where type='table';"`.chomp.to_i
-        original_size = File.size(database)
-
-        Dir.glob(backup + "*").each { |file| File.delete(file) }
-
-        {
-          "size" => {"original" => original_size, "restored" => restored_size},
-          "tables" => {"original" => original_tables_count, "restored" => restored_tables_count}
-        }
+        execute("restore", argv, database, async: async, tabled_output: false)
       end
 
       def databases(async: false, **argv)
-        execute("databases", argv, async: async, hashify: true)
+        execute("databases", argv, async: async, tabled_output: true)
       end
 
       def generations(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database, async: async, hashify: true)
+        execute("generations", argv, database, async: async, tabled_output: true)
       end
 
       def snapshots(database, async: false, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("snapshots", argv, database, async: async, hashify: true)
+        execute("snapshots", argv, database, async: async, tabled_output: true)
       end
 
       private
 
-      def execute(command, argv = {}, database = nil, async: false, hashify: false)
+      def execute(command, argv = {}, database = nil, async: false, tabled_output: false)
         cmd = prepare(command, argv, database)
-        run(cmd, async: async, hashify: hashify)
+        results = run(cmd, async: async, tabled_output: tabled_output)
+
+        if Array === results && results.one? && results[0]["level"] == "ERROR"
+          raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`; Reason: #{results[0]["error"]}"
+        else
+          results
+        end
       end
 
       def prepare(command, argv = {}, database = nil)
@@ -158,14 +133,14 @@ module Litestream
         cmd
       end
 
-      def run(cmd, async: false, hashify: false)
+      def run(cmd, async: false, tabled_output: false)
         if async
           # To release the resources of the Ruby process, just fork and exit.
           # The forked process executes litestream and replaces itself.
           exec(*cmd) if fork.nil?
         else
-          out = `#{cmd.join(" ")}`
-          text_table_to_hashes(out) if hashify
+          stdout = `#{cmd.join(" ")}`.chomp
+          tabled_output ? text_table_to_hashes(stdout) : stdout.split("\n").map { Logfmt.parse(_1) }
         end
       end
 

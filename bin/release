@@ -18,6 +18,8 @@ git push --tags
 rake package
 for gem in pkg/litestream-$VERSION*.gem ; do
   gem push "$gem" --host https://rubygems.org
-  rm "$gem"
-  rm -rf "${gem/.gem/}"
+  if [ $? -eq 0 ]; then
+    rm "$gem"
+    rm -rf "${gem/.gem/}"
+  fi
 done

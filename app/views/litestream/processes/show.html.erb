@@ -1,0 +1,121 @@
+<section id="process_<%= @process[:pid] %>" class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="flex items-baseline gap-2 text-2xl font-bold">
+      Litestream
+
+      <% if @process[:status] == "sleeping" %>
+        <small class="inline-flex rounded-full px-2 text-sm font-semibold bg-yellow-100 text-yellow-800">
+          <%= @process[:status] %>
+        </small>
+      <% elsif @process[:status] %>
+        <small class="inline-flex rounded-full px-2 text-sm font-semibold bg-green-100 text-green-800">
+          <%= @process[:status] %>
+        </small>
+      <% else %>
+        <small class="inline-flex rounded-full px-2 text-sm font-semibold bg-red-100 text-red-800">
+          not running
+        </small>
+      <% end %>
+    </h1>
+
+    <% if @process[:status] %>
+      <small class="text-base">
+        #<code><%= @process[:pid] %></code>
+      </small>
+    <% end %>
+  </div>
+
+  <% if @process[:status] %>
+    <dl class="grid grid-cols-[fit-content(100%)_1fr] gap-x-4">
+      <dt class="font-bold">Started at</dt>
+      <dd class="">
+        <abbr title="<%= @process[:started] %>" class="underline decoration-dashed decoration-gray-500 cursor-help">
+          <time datetime="<%= @process[:started] %>"><%= @process[:started].to_formatted_s(:db) %></time>
+        </abbr>
+      </dd>
+    </dl>
+  <% end %>
+</section>
+<br>
+<br>
+
+<section id="databases" class="">
+  <div class="mb-3 flex items-center justify-between border-b">
+    <h2 class="text-2xl font-bold">Databases</h2>
+    <p class="text-right">Total: <strong><%= @databases.size %></strong></p>
+  </div>
+
+  <ul class="list-[square] list-outside ml-4">
+    <% @databases.each do |database| %>
+      <li>
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">
+            <code><%= database['path'] %></code>
+          </h2>
+          <%= button_to "Restore", restorations_path, class: "rounded-md bg-slate-800 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700", params: { database: database['path'] } %>
+        </div>
+
+        <br />
+        <section id="generations" class="ml-6">
+          <% database['generations'].each do |generation| %>
+            <details id="<%= generation['generation'] %>" open="open">
+              <summary class="cursor-pointer rounded p-2 hover:bg-gray-50">
+                <code><%= generation['generation'] %></code>
+                (<em><%= generation['lag'] %> lag</em>)
+              </summary>
+
+              <dl class="ml-7 grid grid-cols-[fit-content(100%)_1fr] gap-x-4">
+                <dt class="font-bold">Start</dt>
+                <dd class="">
+                  <abbr title="<%= generation['start'] %>" class="underline decoration-dashed decoration-gray-500 cursor-help">
+                    <time datetime="<%= generation['start'] %>"><%= DateTime.parse(generation['start']).to_formatted_s(:db) %></time>
+                  </abbr>
+                </dd>
+
+                <dt class="font-bold">End</dt>
+                <dd class="">
+                  <abbr title="<%= generation['end'] %>" class="underline decoration-dashed decoration-gray-500 cursor-help">
+                    <time datetime="<%= generation['end'] %>"><%= DateTime.parse(generation['end']).to_formatted_s(:db) %></time>
+                  </abbr>
+                </dd>
+
+                <div class="col-span-2">
+                  <dt class="font-bold">Snapshots</dt>
+                  <dd class="">
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-left text-sm font-semibold text-gray-900">Created at</th>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900">Index</th>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900">Size</th>
+                        </tr>
+                      </thead>
+
+                      <tbody class="bg-white">
+                        <% generation['snapshots'].each do |snapshot| %>
+                          <tr class="align-top even:bg-gray-50">
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900">
+                              <abbr title="<%= snapshot['created'] %>" class="underline decoration-dashed decoration-gray-500 cursor-help">
+                                <time datetime="<%= snapshot['created'] %>"><%= DateTime.parse(snapshot['created']).to_formatted_s(:db) %></time>
+                              </abbr>
+                            </td>
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 text-right">
+                              <%= snapshot['index'] %>
+                            </td>
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 text-right">
+                              <%= number_to_human_size snapshot['size'] %>
+                            </td>
+                          </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </dd>
+                </div>
+              </dl>
+            </details>
+          <% end %>
+        </section>
+      </li>
+    <% end %>
+  </ul>
+</section>

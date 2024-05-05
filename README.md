@@ -168,37 +168,19 @@ You can forward arguments in whatever order you like, you simply need to ensure 
 
 ### Verification
 
-You can verify the integrity of your backed-up databases using the gem's provided `litestream:verify` rake task. This rake task requires that you specify which specific database you want to verify. As with the `litestream:restore` tasks, you pass arguments to the rake task via argument forwarding. For example, to verify the production database, you would run:
+You can verify the integrity of your backed-up databases using the gem's provided `Litestream.verify!` method. The method takes the path to a database file that you have configured Litestream to backup; that is, it takes one of the `path` values under the `dbs` key in your `litestream.yml` configuration file. For example, to verify the production database, you would run:
 
-```shell
-bin/rails litestream:verify -- --database=storage/production.sqlite3
-# or
-bundle exec rake litestream:verify -- --database=storage/production.sqlite3
+```ruby
+Litestream.verify! "storage/production.sqlite3"
 ```
 
-The `litestream:verify` rake task takes the same options as the `litestream:restore` rake task. After restoring the backup, the rake task will verify the integrity of the restored database by ensuring that the restored database file
+In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait 10 seconds to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file
 
 1. exists,
 2. can be opened by SQLite, and
-3. sufficiently matches the original database file.
+3. has up-to-date data.
 
-Since point 3 is subjective, the rake task will output a message providing both the file size and number of tables of both the "original" and "restored" databases. You must manually verify that the restored database is within an acceptable range of the original database.
-
-The rake task will output a message similar to the following:
-
-```
-size
-  original          21688320
-  restored          21688320
-  delta             0
-
-tables
-  original          9
-  restored          9
-  delta             0
-```
-
-After restoring the backup, the `litestream:verify` rake task will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task instead.
+After restoring the backup, the `Litestream.verify!` method will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task or `Litestream::Commands.restore` method instead.
 
 ### Introspection
 

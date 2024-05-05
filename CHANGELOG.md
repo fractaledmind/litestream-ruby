@@ -1,5 +1,30 @@
 ## [Unreleased]
 
+## [0.9.0] - 2024-05-04
+
+- Improve the verification task by exiting with a proper status code and printing out a more clear message ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/27))
+
+## [0.8.0] - 2024-05-02
+
+- Improve the verification task by returning number of tables, indexes, and rows ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/26))
+
+## [0.7.2] - 2024-05-02
+
+- Ensure that the `Logfmt` gem is available to parse the Litestream command output
+
+## [0.7.1] - 2024-05-02
+
+- Fix typo in executing Litestream commands
+
+## [0.7.0] - 2024-05-02
+
+- Commands return parsed Litestream output or error if Litestream errors ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/25))
+
+## [0.6.0] - 2024-04-30
+
+- Don't provide a default output for the restore command, only for the verify command ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/24))
+- Remove a typo from upstream.rb ([@skatkov](https://github.com/fractaledmind/litestream-ruby/pull/21))
+
 ## [0.5.5] - 2024-04-30
 
 - Fix bug with forwarding arguments to the Rake tasks being symbols when passed to `exec` ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/23))
