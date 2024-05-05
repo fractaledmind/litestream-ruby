@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.10.0] - 2024-05-05
+
+- Remove the verification command and Rake task and replace with a better `Litestream.verify!` method ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/28))
+- Add a mountable engine for a web dashboard overview of the Litestream process ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/29))
+- Add a Puma plugin ([@zachasme](https://github.com/fractaledmind/litestream-ruby/pull/22))
+
 ## [0.9.0] - 2024-05-04
 
 - Improve the verification task by exiting with a proper status code and printing out a more clear message ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/27))
