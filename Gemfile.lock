@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    litestream (0.10.2)
+    litestream (0.10.3)
       logfmt (>= 0.0.10)
       sqlite3
 
