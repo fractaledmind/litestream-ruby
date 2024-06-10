@@ -13,7 +13,7 @@ namespace :litestream do
     true
   end
 
-  desc 'Monitor and continuously replicate SQLite databases defined in your config file, e.g. rake litestream:replicate -- -exec "foreman start"'
+  desc 'Monitor and continuously replicate SQLite databases defined in your config file, for example `rake litestream:replicate -- -exec "foreman start"`'
   task replicate: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -26,7 +26,7 @@ namespace :litestream do
     Litestream::Commands.replicate(async: true, **options)
   end
 
-  desc "Restore a SQLite database from a Litestream replica, e.g. rake litestream:restore -- -database=storage/production.sqlite3"
+  desc "Restore a SQLite database from a Litestream replica, for example `rake litestream:restore -- -database=storage/production.sqlite3`"
   task restore: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -40,7 +40,7 @@ namespace :litestream do
     Litestream::Commands.restore(database, async: true, **options)
   end
 
-  desc "List all databases and associated replicas in the config file, e.g. rake litestream:databases -- -no-expand-env"
+  desc "List all databases and associated replicas in the config file, for example `rake litestream:databases -- -no-expand-env`"
   task databases: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -53,7 +53,7 @@ namespace :litestream do
     Litestream::Commands.databases(async: true, **options)
   end
 
-  desc "List all generations for a database or replica, e.g. rake litestream:generations -- -database=storage/production.sqlite3"
+  desc "List all generations for a database or replica, for example `rake litestream:generations -- -database=storage/production.sqlite3`"
   task generations: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
@@ -67,7 +67,7 @@ namespace :litestream do
     Litestream::Commands.generations(database, async: true, **options)
   end
 
-  desc "List all snapshots for a database or replica, e.g. rake litestream:snapshots -- -database=storage/production.sqlite3"
+  desc "List all snapshots for a database or replica, for example `rake litestream:snapshots -- -database=storage/production.sqlite3`"
   task snapshots: :environment do
     options = {}
     if (separator_index = ARGV.index("--"))
