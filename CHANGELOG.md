@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.10.3] - 2024-06-10
+
+- Loading Rake tasks in the engine has them execute twice, so remove
+
 ## [0.10.2] - 2024-06-10
 
 - Fix whatever weird thing is up with "e.g." breaking the Rake task descriptions
