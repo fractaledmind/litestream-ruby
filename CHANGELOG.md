@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.10.2] - 2024-06-10
+
+- Fix whatever weird thing is up with "e.g." breaking the Rake task descriptions
+
 ## [0.10.1] - 2024-05-05
 
 - Ensure `verify!` reports the database that failed and returns true if verification passes ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/30))
