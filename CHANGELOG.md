@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.10.4] - 2024-06-21
+
+- Make engine available in published gem pkg ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/31))
+
 ## [0.10.3] - 2024-06-10
 
 - Loading Rake tasks in the engine has them execute twice, so remove
