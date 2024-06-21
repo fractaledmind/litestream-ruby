@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
     "changelog_uri" => "https://github.com/fractaledmind/litestream-ruby/CHANGELOG.md"
   }
 
-  spec.files = Dir["lib/**/*", "LICENSE", "Rakefile", "README.md"]
+  spec.files = Dir["{app,config,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
   spec.bindir = "exe"
   spec.executables << "litestream"
 
