@@ -82,11 +82,11 @@ module Litestream
             pid, _name = value.strip.split(" ")
             info[:pid] = pid
           elsif line.start_with?("Active:")
-            _key, value = line.split(":")
-            value, _ago = value.split(";")
+            value, _ago = line.split(";")
             status, timestamp = value.split(" since ")
-            info[:started] = DateTime.strptime(timestamp.strip, "%Y-%m-%d %H:%M:%S %Z")
-            info[:status] = status.split("(").first.strip
+            info[:started] = DateTime.strptime(timestamp.strip, "%a %Y-%m-%d %H:%M:%S %Z")
+            status_match = status.match(%r{\((?<status>.*)\)})
+            info[:status] = status_match ? status_match[:status] : nil
           end
         end
       else
