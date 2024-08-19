@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.10.5] - 2024-06-21
+
+- Fix Litestream.replicate_process for `systemd` ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/32))
+
 ## [0.10.4] - 2024-06-21
 
 - Make engine available in published gem pkg ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/31))
