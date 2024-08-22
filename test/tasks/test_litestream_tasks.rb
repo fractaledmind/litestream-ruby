@@ -14,7 +14,6 @@ class TestLitestreamTasks < ActiveSupport::TestCase
   end
 
   def teardown
-    Litestream.configuration = nil
     ARGV.replace []
   end
 

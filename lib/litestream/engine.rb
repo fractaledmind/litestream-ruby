@@ -18,9 +18,5 @@ module Litestream
         Litestream.public_send(:"#{name}=", value)
       end
     end
-
-    initializer "deprecator" do |app|
-      app.deprecators[:litestream] = Litestream.deprecator
-    end
   end
 end

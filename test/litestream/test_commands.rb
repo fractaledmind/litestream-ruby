@@ -12,10 +12,9 @@ class TestCommands < ActiveSupport::TestCase
   end
 
   def teardown
-    Litestream.configuration = nil
-    ENV["LITESTREAM_REPLICA_BUCKET"] = nil
-    ENV["LITESTREAM_ACCESS_KEY_ID"] = nil
-    ENV["LITESTREAM_SECRET_ACCESS_KEY"] = nil
+    Litestream.replica_bucket = ENV["LITESTREAM_REPLICA_BUCKET"] = nil
+    Litestream.replica_key_id = ENV["LITESTREAM_ACCESS_KEY_ID"] = nil
+    Litestream.replica_access_key = ENV["LITESTREAM_SECRET_ACCESS_KEY"] = nil
   end
 
   class TestReplicateCommand < TestCommands
@@ -95,9 +94,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_replicate_sets_replica_bucket_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-      end
+      Litestream.replica_bucket = "mybkt"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
@@ -109,9 +106,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_replicate_sets_replica_key_id_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_key_id = "mykey"
-      end
+      Litestream.replica_key_id = "mykey"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
@@ -123,9 +118,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_replicate_sets_replica_access_key_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
@@ -137,11 +130,9 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_replicate_sets_all_env_vars_from_config_when_env_vars_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
@@ -157,11 +148,9 @@ class TestCommands < ActiveSupport::TestCase
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
 
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.replicate
@@ -238,9 +227,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_sets_replica_bucket_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-      end
+      Litestream.replica_bucket = "mybkt"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -252,9 +239,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_sets_replica_key_id_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_key_id = "mykey"
-      end
+      Litestream.replica_key_id = "mykey"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -266,9 +251,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_sets_replica_access_key_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -280,11 +263,9 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_sets_all_env_vars_from_config_when_env_vars_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -300,11 +281,9 @@ class TestCommands < ActiveSupport::TestCase
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
 
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -377,9 +356,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_sets_replica_bucket_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-      end
+      Litestream.replica_bucket = "mybkt"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -391,9 +368,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_sets_replica_key_id_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_key_id = "mykey"
-      end
+      Litestream.replica_key_id = "mykey"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -405,9 +380,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_sets_replica_access_key_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -419,11 +392,9 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_sets_all_env_vars_from_config_when_env_vars_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -439,11 +410,9 @@ class TestCommands < ActiveSupport::TestCase
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
 
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -520,9 +489,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_sets_replica_bucket_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-      end
+      Litestream.replica_bucket = "mybkt"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -534,9 +501,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_sets_replica_key_id_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_key_id = "mykey"
-      end
+      Litestream.replica_key_id = "mykey"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -548,9 +513,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_sets_replica_access_key_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -562,11 +525,9 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_sets_all_env_vars_from_config_when_env_vars_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -582,11 +543,9 @@ class TestCommands < ActiveSupport::TestCase
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
 
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -663,9 +622,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_sets_replica_bucket_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-      end
+      Litestream.replica_bucket = "mybkt"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -677,9 +634,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_sets_replica_key_id_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_key_id = "mykey"
-      end
+      Litestream.replica_key_id = "mykey"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -691,9 +646,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_sets_replica_access_key_env_var_from_config_when_env_var_not_set
-      Litestream.configure do |config|
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -705,11 +658,9 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_sets_all_env_vars_from_config_when_env_vars_not_set
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -725,11 +676,9 @@ class TestCommands < ActiveSupport::TestCase
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
 
-      Litestream.configure do |config|
-        config.replica_bucket = "mybkt"
-        config.replica_key_id = "mykey"
-        config.replica_access_key = "access"
-      end
+      Litestream.replica_bucket = "mybkt"
+      Litestream.replica_key_id = "mykey"
+      Litestream.replica_access_key = "access"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
