@@ -4,7 +4,7 @@ require "sqlite3"
 
 module Litestream
   class << self
-    attr_accessor :configuration
+    attr_writer :configuration
 
     def configuration
       @configuration ||= Configuration.new
@@ -34,21 +34,23 @@ module Litestream
   # Deprecate the class-level writer
   def self.username=(value)
     deprecator.warn(
-      'Setting Litestream.username is deprecated. Use Litestream.configure { |config| config.username = ... } instead.',
+      "Setting Litestream.username is deprecated. Use Litestream.configure { |config| config.username = ... } instead.",
       caller
     )
     @@username = value
   end
+
   def self.password=(value)
     deprecator.warn(
-      'Setting Litestream.password is deprecated. Use Litestream.configure { |config| config.password = ... } instead.',
+      "Setting Litestream.password is deprecated. Use Litestream.configure { |config| config.password = ... } instead.",
       caller
     )
     @@password = value
   end
+
   def self.queue=(value)
     deprecator.warn(
-      'Setting Litestream.queue is deprecated. Use Litestream.configure { |config| config.queue = ... } instead.',
+      "Setting Litestream.queue is deprecated. Use Litestream.configure { |config| config.queue = ... } instead.",
       caller
     )
     @@queue = value
@@ -86,7 +88,7 @@ module Litestream
     # this works if variable set after Litestream is loaded
     def username
       deprecator.warn(
-        'Reading Litestream.username is deprecated. Use Litestream.configuration.username instead.',
+        "Reading Litestream.username is deprecated. Use Litestream.configuration.username instead.",
         caller
       )
       @@username ||= nil
@@ -97,7 +99,7 @@ module Litestream
     # this works if variable set after Litestream is loaded
     def password
       deprecator.warn(
-        'Reading Litestream.password is deprecated. Use Litestream.configuration.password instead.',
+        "Reading Litestream.password is deprecated. Use Litestream.configuration.password instead.",
         caller
       )
       @@password ||= nil
@@ -106,7 +108,7 @@ module Litestream
 
     def queue
       deprecator.warn(
-        'Reading Litestream.queue is deprecated. Use Litestream.configuration.queue instead.',
+        "Reading Litestream.queue is deprecated. Use Litestream.configuration.queue instead.",
         caller
       )
       @@queue ||= nil

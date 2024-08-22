@@ -3,10 +3,12 @@ module Litestream
     protect_from_forgery with: :exception
     around_action :force_english_locale!
 
-    http_basic_authenticate_with(
-      name: Litestream.configuration.username,
-      password: Litestream.configuration.password
-    ) if Litestream.configuration.password
+    if Litestream.configuration.password
+      http_basic_authenticate_with(
+        name: Litestream.configuration.username,
+        password: Litestream.configuration.password
+      )
+    end
 
     private
 
