@@ -1,4 +1,4 @@
-require "active_job/base"
+require "active_job"
 
 module Litestream
   class VerificationJob < ActiveJob::Base
