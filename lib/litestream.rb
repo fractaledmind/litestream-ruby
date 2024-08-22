@@ -21,11 +21,34 @@ module Litestream
 
   VerificationFailure = Class.new(StandardError)
 
-  mattr_writer :username
-  mattr_writer :password
-  mattr_writer :queue
+  # Deprecate the class-level writer
+  def self.username=(value)
+    deprecator.warn(
+      'Setting Litestream.username is deprecated. Use Litestream.configure { |config| config.username = ... } instead.',
+      caller
+    )
+    @@username = value
+  end
+  def self.password=(value)
+    deprecator.warn(
+      'Setting Litestream.password is deprecated. Use Litestream.configure { |config| config.password = ... } instead.',
+      caller
+    )
+    @@password = value
+  end
+  def self.queue=(value)
+    deprecator.warn(
+      'Setting Litestream.queue is deprecated. Use Litestream.configure { |config| config.queue = ... } instead.',
+      caller
+    )
+    @@queue = value
+  end
 
   class << self
+    def deprecator
+      @deprecator ||= ActiveSupport::Deprecation.new("0.12.0", "Litestream")
+    end
+
     def verify!(database_path)
       database = SQLite3::Database.new(database_path)
       database.execute("CREATE TABLE IF NOT EXISTS _litestream_verification (id INTEGER PRIMARY KEY, uuid BLOB)")
@@ -52,17 +75,32 @@ module Litestream
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def username
-      @username ||= ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
+      deprecator.warn(
+        'Reading Litestream.username is deprecated. Use Litestream.configuration.username instead.',
+        caller
+      )
+      @@username ||= nil
+      @username ||= ENV["LITESTREAM_PASSWORD"] || @@username || configuration&.username || "litestream"
     end
 
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def password
-      @password ||= ENV["LITESTREAM_PASSWORD"] || @@password
+      deprecator.warn(
+        'Reading Litestream.password is deprecated. Use Litestream.configuration.password instead.',
+        caller
+      )
+      @@password ||= nil
+      @password ||= ENV["LITESTREAM_PASSWORD"] || @@password || configuration&.password
     end
 
     def queue
-      @queue ||= ENV["LITESTREAM_QUEUE"] || @@queue || "default"
+      deprecator.warn(
+        'Reading Litestream.queue is deprecated. Use Litestream.configuration.queue instead.',
+        caller
+      )
+      @@queue ||= nil
+      @queue ||= ENV["LITESTREAM_QUEUE"] || @@queue || configuration&.queue || "default"
     end
 
     def replicate_process
