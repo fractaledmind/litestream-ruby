@@ -13,7 +13,7 @@ module Litestream
   end
 
   class Configuration
-    attr_accessor :replica_bucket, :replica_key_id, :replica_access_key
+    attr_accessor :replica_bucket, :replica_key_id, :replica_access_key, :password, :username, :queue
 
     def initialize
     end
