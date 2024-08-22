@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "logfmt", ">= 0.0.10"
   spec.add_dependency "sqlite3"
   spec.add_dependency "activejob"
+  spec.add_dependency "activesupport"
   spec.add_development_dependency "rubyzip"
   spec.add_development_dependency "rails"
   spec.add_development_dependency "sqlite3"

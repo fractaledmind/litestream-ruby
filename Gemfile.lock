@@ -3,6 +3,7 @@ PATH
   specs:
     litestream (0.11.0)
       activejob
+      activesupport
       logfmt (>= 0.0.10)
       sqlite3
 
