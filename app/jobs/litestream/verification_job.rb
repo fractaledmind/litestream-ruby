@@ -1,5 +1,5 @@
 module Litestream
-  class VerificationJob < ApplicationJob
+  class VerificationJob < ActiveJob::Base
     queue_as Litestream.queue
 
     def perform
