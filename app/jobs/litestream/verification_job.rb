@@ -1,3 +1,5 @@
+require "active_job/base"
+
 module Litestream
   class VerificationJob < ActiveJob::Base
     queue_as Litestream.queue
