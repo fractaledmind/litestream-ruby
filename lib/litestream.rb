@@ -16,6 +16,12 @@ module Litestream
     attr_accessor :replica_bucket, :replica_key_id, :replica_access_key, :password, :username, :queue
 
     def initialize
+      @replica_bucket = nil
+      @replica_key_id = nil
+      @replica_access_key = nil
+      @password = ENV["LITESTREAM_PASSWORD"]
+      @username = ENV["LITESTREAM_USERNAME"] || "litestream"
+      @queue = ENV["LITESTREAM_QUEUE"] || "default"
     end
   end
 
