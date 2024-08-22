@@ -2,7 +2,7 @@ require "active_job"
 
 module Litestream
   class VerificationJob < ActiveJob::Base
-    queue_as Litestream.queue
+    queue_as Litestream.configuration.queue
 
     def perform
       Litestream::Commands.databases.each do |db_hash|
