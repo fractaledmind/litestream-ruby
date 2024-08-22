@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.11.0] - 2024-06-21
+
+- Add a default username for the Litestream engine ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/commit/91c4de8b85be01f8cfd0cc2bf0027a6c0d9f3aaf))
+- Add a verification job ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/36))
+
 ## [0.10.5] - 2024-06-21
 
 - Fix Litestream.replicate_process for `systemd` ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/32))
