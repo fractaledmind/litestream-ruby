@@ -35,7 +35,7 @@ module Litestream
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def username
-      @username ||= ENV["LITESTREAM_PASSWORD"] || @@username || "litestream"
+      @username ||= ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
     end
 
     def password
