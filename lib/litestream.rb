@@ -5,6 +5,10 @@ require "sqlite3"
 module Litestream
   class << self
     attr_accessor :configuration
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
   end
 
   def self.configure
