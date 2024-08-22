@@ -1,5 +1,29 @@
 # litestream-ruby
 
+<p>
+  <a href="https://rubygems.org/gems/litestream">
+  <img alt="GEM Version" src="https://img.shields.io/gem/v/litestream?color=168AFE&include_prereleases&logo=ruby&logoColor=FE1616">
+  </a>
+  <a href="https://rubygems.org/gems/litestream">
+    <img alt="GEM Downloads" src="https://img.shields.io/gem/dt/litestream?color=168AFE&logo=ruby&logoColor=FE1616">
+  </a>
+  <a href="https://github.com/testdouble/standard">
+    <img alt="Ruby Style" src="https://img.shields.io/badge/style-standard-168AFE?logo=ruby&logoColor=FE1616" />
+  </a>
+  <a href="https://github.com/fractaledmind/litestream-ruby/actions/workflows/main.yml">
+    <img alt="Tests" src="https://github.com/fractaledmind/litestream-ruby/actions/workflows/main.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/sponsors/fractaledmind">
+    <img alt="Sponsors" src="https://img.shields.io/github/sponsors/fractaledmind?color=eb4aaa&logo=GitHub%20Sponsors" />
+  </a>
+  <a href="https://ruby.social/@fractaledmind">
+    <img alt="Ruby.Social Follow" src="https://img.shields.io/mastodon/follow/109291299520066427?domain=https%3A%2F%2Fruby.social&label=%40fractaledmind&style=social">
+  </a>
+  <a href="https://twitter.com/fractaledmind">
+    <img alt="Twitter Follow" src="https://img.shields.io/twitter/url?label=%40fractaledmind&style=social&url=https%3A%2F%2Ftwitter.com%2Ffractaledmind">
+  </a>
+</p>
+
 [Litestream](https://litestream.io/) is a standalone streaming replication tool for SQLite. This gem provides a Ruby interface to Litestream.
 
 ## Installation
@@ -202,6 +226,119 @@ In order to verify that the backup for that database is both restorable and fres
 3. has up-to-date data.
 
 After restoring the backup, the `Litestream.verify!` method will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task or `Litestream::Commands.restore` method instead.
+
+### Dashboard
+
+The gem provides a web dashboard for monitoring the status of your Litestream replication. To mount the dashboard in your Rails application, add the following to your `config/routes.rb` file:
+
+```ruby
+authenticate :user, -> (user) { user.admin? } do
+  mount Litestream::Engine, at: "/litestream"
+end
+```
+
+> [!NOTE]
+> Be sure to [secure the dashboard](#authentication) in production.
+
+#### Authentication
+
+Litestream Rails does not restrict access out of the box. You must secure the dashboard yourself. However, it does provide basic HTTP authentication that can be used with basic authentication or Devise. All you need to do is setup a username and password.
+
+There are two ways to setup a username and password. First, you can use the `LITESTREAM_USERNAME` and `LITESTREAM_PASSWORD` environment variables:
+
+```ruby
+ENV["LITESTREAM_USERNAME"] = "frodo"
+ENV["LITESTREAM_PASSWORD"] = "ikeptmysecrets"
+```
+
+Second, you can configure the access credentials via the Rails configuration object, under the `litestream` key, in an initializer:
+
+```ruby
+# Set authentication credentials for Litestream
+config.litestream.username = Rails.application.credentials.litestream.username
+config.litestream.password = Rails.application.credentials.litestream.password
+```
+
+Either way, if you have set a username and password, Litestream will use basic HTTP authentication.
+
+> [!IMPORTANT]
+> If you have not set a username and password, Litestream will not require any authentication to view the dashboard.
+
+If you use Devise for authentication in your app, you can also restrict access to the dashboard by using their `authenticate` constraint in your routes file:
+
+```ruby
+authenticate :user, -> (user) { user.admin? } do
+  mount LitestreamRails::Engine, at: "/litestream"
+end
+```
+
+### Examples
+
+There is only one screen in the dashboard.
+
+* the show view of the Litestream replication process:
+
+![screenshot of the single page in the web dashboard, showing details of the Litestream replication process](images/show-screenshot.png)
+
+### Usage with API-only Applications
+
+If your Rails application is an API-only application (generated with the `rails new --api` command), you will need to add the following middleware to your `config/application.rb` file in order to use the dashboard UI provided by Litestream:
+
+```ruby
+# /config/application.rb
+config.middleware.use ActionDispatch::Cookies
+config.middleware.use ActionDispatch::Session::CookieStore
+config.middleware.use ActionDispatch::Flash
+```
+
+### Overwriting the views
+
+You can find the views in [`app/views`](https://github.com/fractaledmind/litestream/tree/main/app/views).
+
+```bash
+app/views/
+├── layouts
+│   └── litestream
+│       ├── _style.html
+│       └── application.html.erb
+└── litestream
+    └── processes
+        └── show.html.erb
+```
+
+You can always take control of the views by creating your own views and/or partials at these paths in your application. For example, if you wanted to overwrite the application layout, you could create a file at `app/views/layouts/litestream/application.html.erb`. If you wanted to remove the footer and the automatically disappearing flash messages, as one concrete example, you could define that file as:
+
+```erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Litestream</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= render "layouts/litestream/style" %>
+  </head>
+  <body class="h-full flex flex-col">
+    <main class="container mx-auto max-w-4xl mt-4 px-2 grow">
+      <%= content_for?(:content) ? yield(:content) : yield %>
+    </main>
+
+    <div class="fixed top-0 left-0 right-0 text-center py-2">
+      <% if notice.present? %>
+        <p class="py-2 px-3 bg-green-50 text-green-500 font-medium rounded-lg inline-block">
+          <%= notice %>
+        </p>
+      <% end %>
+
+      <% if alert.present? %>
+        <p class="py-2 px-3 bg-red-50 text-red-500 font-medium rounded-lg inline-block">
+          <%= alert %>
+        </p>
+      <% end %>
+    </div>
+  </body>
+</html>
+```
 
 ### Introspection
 
