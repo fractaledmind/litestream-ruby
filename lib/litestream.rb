@@ -23,6 +23,7 @@ module Litestream
 
   mattr_writer :username
   mattr_writer :password
+  mattr_writer :queue
 
   class << self
     def verify!(database_path)
@@ -58,6 +59,10 @@ module Litestream
     # this works if variable set after Litestream is loaded
     def password
       @password ||= ENV["LITESTREAM_PASSWORD"] || @@password
+    end
+
+    def queue
+      @queue ||= ENV["LITESTREAM_QUEUE"] || @@queue || "default"
     end
 
     def replicate_process
