@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     litestream (0.10.5)
+      activejob
       logfmt (>= 0.0.10)
       sqlite3
 
