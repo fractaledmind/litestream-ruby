@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## [0.11.2] - 2024-09-06
+
+- Simplify the getters to not use memoization
+
+## [0.11.1] - 2024-09-06
+
+- Ensure the litestream initializer handles `nil`s
+
 ## [0.11.0] - 2024-06-21
 
 - Add a default username for the Litestream engine ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/commit/91c4de8b85be01f8cfd0cc2bf0027a6c0d9f3aaf))

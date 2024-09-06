@@ -3,11 +3,25 @@
 require "sqlite3"
 
 module Litestream
+  VerificationFailure = Class.new(StandardError)
+
   class << self
-    attr_accessor :configuration
+    attr_writer :configuration
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def deprecator
+      @deprecator ||= ActiveSupport::Deprecation.new("0.12.0", "Litestream")
+    end
   end
 
   def self.configure
+    deprecator.warn(
+      "Configuring Litestream via Litestream.configure is deprecated. Use Rails.application.configure { config.litestream.* = ... } instead.",
+      caller
+    )
     self.configuration ||= Configuration.new
     yield(configuration)
   end
@@ -19,11 +33,7 @@ module Litestream
     end
   end
 
-  VerificationFailure = Class.new(StandardError)
-
-  mattr_writer :username
-  mattr_writer :password
-  mattr_writer :queue
+  mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key
 
   class << self
     def verify!(database_path)
@@ -52,17 +62,27 @@ module Litestream
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def username
-      @username ||= ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
+      ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
     end
 
-    # use method instead of attr_accessor to ensure
-    # this works if variable set after Litestream is loaded
     def password
-      @password ||= ENV["LITESTREAM_PASSWORD"] || @@password
+      ENV["LITESTREAM_PASSWORD"] || @@password
     end
 
     def queue
-      @queue ||= ENV["LITESTREAM_QUEUE"] || @@queue || "default"
+      ENV["LITESTREAM_QUEUE"] || @@queue || "default"
+    end
+
+    def replica_bucket
+      @@replica_bucket || configuration.replica_bucket
+    end
+
+    def replica_key_id
+      @@replica_key_id || configuration.replica_key_id
+    end
+
+    def replica_access_key
+      @@replica_access_key || configuration.replica_access_key
     end
 
     def replicate_process

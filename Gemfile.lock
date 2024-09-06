@@ -1,9 +1,13 @@
 PATH
   remote: .
   specs:
-    litestream (0.11.0)
-      activejob
+    litestream (0.11.2)
+      actionpack (>= 7.0)
+      actionview (>= 7.0)
+      activejob (>= 7.0)
+      activesupport (>= 7.0)
       logfmt (>= 0.0.10)
+      railties (>= 7.0)
       sqlite3
 
 GEM

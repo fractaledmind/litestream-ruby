@@ -118,11 +118,9 @@ module Litestream
       end
 
       def prepare(command, argv = {}, database = nil)
-        if Litestream.configuration
-          ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.configuration.replica_bucket
-          ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.configuration.replica_key_id
-          ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.configuration.replica_access_key
-        end
+        ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.replica_bucket
+        ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.replica_key_id
+        ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.replica_access_key
 
         args = {
           "--config" => Rails.root.join("config", "litestream.yml").to_s
