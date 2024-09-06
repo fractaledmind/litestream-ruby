@@ -62,27 +62,27 @@ module Litestream
     # use method instead of attr_accessor to ensure
     # this works if variable set after Litestream is loaded
     def username
-      @username ||= ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
+      ENV["LITESTREAM_USERNAME"] || @@username || "litestream"
     end
 
     def password
-      @password ||= ENV["LITESTREAM_PASSWORD"] || @@password
+      ENV["LITESTREAM_PASSWORD"] || @@password
     end
 
     def queue
-      @queue ||= ENV["LITESTREAM_QUEUE"] || @@queue || "default"
+      ENV["LITESTREAM_QUEUE"] || @@queue || "default"
     end
 
     def replica_bucket
-      @replica_bucket ||= @@replica_bucket || configuration.replica_bucket
+      @@replica_bucket || configuration.replica_bucket
     end
 
     def replica_key_id
-      @replica_key_id ||= @@replica_key_id || configuration.replica_key_id
+      @@replica_key_id || configuration.replica_key_id
     end
 
     def replica_access_key
-      @replica_access_key ||= @@replica_access_key || configuration.replica_access_key
+      @@replica_access_key || configuration.replica_access_key
     end
 
     def replicate_process

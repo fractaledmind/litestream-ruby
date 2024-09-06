@@ -28,9 +28,9 @@ class LitestreamGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "config/initializers/litestream.rb" do |content|
-      assert_match "config.replica_bucket = litestream_credentials.replica_bucket", content
-      assert_match "config.replica_key_id = litestream_credentials.replica_key_id", content
-      assert_match "config.replica_access_key = litestream_credentials.replica_access_key", content
+      assert_match "config.litestream.replica_bucket = litestream_credentials&.replica_bucket", content
+      assert_match "config.litestream.replica_key_id = litestream_credentials&.replica_key_id", content
+      assert_match "config.litestream.replica_access_key = litestream_credentials&.replica_access_key", content
     end
   end
 end
