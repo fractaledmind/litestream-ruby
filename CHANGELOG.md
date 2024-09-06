@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.11.2] - 2024-09-06
+
+- Simplify the getters to not use memoization
+
 ## [0.11.1] - 2024-09-06
 
 - Ensure the litestream initializer handles `nil`s
