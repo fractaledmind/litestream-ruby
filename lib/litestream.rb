@@ -19,7 +19,7 @@ module Litestream
 
   def self.configure
     deprecator.warn(
-      'Configuring Litestream via Litestream.configure is deprecated. Use Rails.application.configure { config.litestream.* = ... } instead.',
+      "Configuring Litestream via Litestream.configure is deprecated. Use Rails.application.configure { config.litestream.* = ... } instead.",
       caller
     )
     self.configuration ||= Configuration.new
