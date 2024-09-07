@@ -33,7 +33,7 @@ module Litestream
     end
   end
 
-  mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key
+  mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key, :systemctl_command
 
   class << self
     def verify!(database_path)
@@ -85,10 +85,14 @@ module Litestream
       @@replica_access_key || configuration.replica_access_key
     end
 
+    def systemctl_command
+      @@systemctl_command || "systemctl status litestream"
+    end
+
     def replicate_process
       info = {}
       if !`which systemctl`.empty?
-        systemctl_status = `systemctl status litestream`.chomp
+        systemctl_status = `#{Litestream.systemctl_command}`.chomp
         # ["● litestream.service - Litestream",
         #  "     Loaded: loaded (/lib/systemd/system/litestream.service; enabled; vendor preset: enabled)",
         #  "     Active: active (running) since Tue 2023-07-25 13:49:43 UTC; 8 months 24 days ago",
