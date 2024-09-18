@@ -104,6 +104,12 @@ module Litestream
         execute("snapshots", argv, database, async: async, tabled_output: true)
       end
 
+      def wal(database, async: false, **argv)
+        raise DatabaseRequiredException, "database argument is required for wal command, e.g. litestream:wal -- --database=path/to/database.sqlite" if database.nil?
+
+        execute("wal", argv, database, async: async, tabled_output: true)
+      end
+
       private
 
       def execute(command, argv = {}, database = nil, async: false, tabled_output: false)
