@@ -52,10 +52,10 @@ This gem wraps the standalone executable version of the [Litestream](https://lit
 
 Supported platforms are:
 
-* arm64-darwin (macos-arm64)
-* x86_64-darwin (macos-x64)
-* arm64-linux (linux-arm64)
-* x86_64-linux (linux-x64)
+- arm64-darwin (macos-arm64)
+- x86_64-darwin (macos-x64)
+- arm64-linux (linux-arm64)
+- x86_64-linux (linux-x64)
 
 ### Using a local installation of `litestream`
 
@@ -63,13 +63,13 @@ If you are not able to use the vendored standalone executables (for example, if 
 
 For example, if you've installed `litestream` so that the executable is found at `/usr/local/bin/litestream`, then you should set your environment variable like so:
 
-``` sh
+```sh
 LITESTREAM_INSTALL_DIR=/usr/local/bin
 ```
 
 This also works with relative paths. If you've installed into your app's directory at `./.bin/litestream`:
 
-``` sh
+```sh
 LITESTREAM_INSTALL_DIR=.bin
 ```
 
@@ -95,11 +95,12 @@ dbs:
 The gem also provides a default initializer file at `config/initializers/litestream.rb` that allows you to configure these four environment variables referenced in the configuration file in Ruby. By providing a Ruby interface to these environment variables, you can use any method of storing secrets that you prefer. For example, the default generated file uses Rails' encrypted credentials to store your secrets:
 
 ```ruby
-litestream_credentials = Rails.application.credentials.litestream
-Litestream.configure do |config|
-  config.replica_bucket = litestream_credentials.replica_bucket
-  config.replica_key_id = litestream_credentials.replica_key_id
-  config.replica_access_key = litestream_credentials.replica_access_key
+Rails.application.configure do
+  litestream_credentials = Rails.application.credentials.litestream
+
+  config.litestream.replica_bucket = litestream_credentials&.replica_bucket
+  config.litestream.replica_key_id = litestream_credentials&.replica_key_id
+  config.litestream.replica_access_key = litestream_credentials&.replica_access_key
 end
 ```
 
@@ -276,7 +277,7 @@ end
 
 There is only one screen in the dashboard.
 
-* the show view of the Litestream replication process:
+- the show view of the Litestream replication process:
 
 ![screenshot of the single page in the web dashboard, showing details of the Litestream replication process](images/show-screenshot.png)
 
