@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.12.0] - 2024-09-06
+
+- Add `wal` command ([alxvernier](https://github.com/fractaledmind/litestream-ruby/pull/41))
+- Support configuration of custom `systemctl status` command ([rossta](https://github.com/fractaledmind/litestream-ruby/pull/39))
+- Fix litestream showing as "not running" in Docker ([AxelTheGerman](https://github.com/fractaledmind/litestream-ruby/pull/44))
+
 ## [0.11.2] - 2024-09-06
 
 - Simplify the getters to not use memoization
