@@ -369,7 +369,7 @@ name  generation        lag     start                 end
 s3    a295b16a796689f3  -156ms  2024-04-17T00:01:19Z  2024-04-17T00:01:19Z
 ```
 
-Finally, you can list the snapshots available for a database:
+You can list the snapshots available for a database:
 
 ```shell
 bin/rails litestream:snapshots -- --database=storage/production.sqlite3
@@ -380,6 +380,19 @@ This command lists snapshots available for that specified database:
 ```
 replica  generation        index  size     created
 s3       a295b16a796689f3  1      4645465  2024-04-17T00:01:19Z
+```
+
+Finally, you can list the wal files available for a database:
+
+```shell
+bin/rails litestream:wal -- --database=storage/production.sqlite3
+```
+
+This command lists wal files available for that specified database:
+
+```
+replica  generation        index  offset    size     created
+s3       a295b16a796689f3  1      0         2036     2024-04-17T00:01:19Z
 ```
 
 ### Running commands from Ruby
@@ -407,7 +420,14 @@ Litestream::Commands.snapshots('storage/production.sqlite3')
 # => [{"replica"=>"s3", "generation"=>"5f4341bc3d22d615", "index"=>"0", "size"=>"4645465", "created"=>"2024-04-17T19:48:09Z"}]
 ```
 
-You can also restore a database programatically using the `Litestream::Commands.restore` method, which returns the path to the restored database:
+The `Litestream::Commands.wal` method returns an array of hashes with the "replica", "generation", "index", "offset","size", and "created" keys for each wal:
+
+```ruby
+Litestream::Commands.wal('storage/production.sqlite3')
+# => [{"replica"=>"s3", "generation"=>"5f4341bc3d22d615", "index"=>"0",  "offset"=>"0", "size"=>"2036", "created"=>"2024-04-17T19:48:09Z"}]
+```
+
+You can also restore a database programmatically using the `Litestream::Commands.restore` method, which returns the path to the restored database:
 
 ```ruby
 Litestream::Commands.restore('storage/production.sqlite3')

@@ -75,4 +75,18 @@ namespace :litestream do
 
     Litestream::Commands.snapshots(database, async: true, **options)
   end
+
+  desc "List all wal files for a database or replica, for example `rake litestream:wal -- -database=storage/production.sqlite3`"
+  task wal: :environment do
+    options = {}
+    if (separator_index = ARGV.index("--"))
+      ARGV.slice(separator_index + 1, ARGV.length)
+        .map { |pair| pair.split("=") }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
+    end
+    database = options.delete("--database") || options.delete("-database")
+    options.symbolize_keys!
+
+    Litestream::Commands.wal(database, async: true, **options)
+  end
 end
