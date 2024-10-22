@@ -115,7 +115,7 @@ module Litestream
           end
         end
       else
-        litestream_replicate_ps = `ps -a | grep litestream | grep replicate`.chomp
+        litestream_replicate_ps = `ps -ax | grep litestream | grep replicate`.chomp
         litestream_replicate_ps.split("\n").each do |line|
           next unless line.include?("litestream replicate")
           pid, * = line.split(" ")
