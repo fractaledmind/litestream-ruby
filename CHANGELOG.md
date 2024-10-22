@@ -5,6 +5,7 @@
 - Add `wal` command ([alxvernier](https://github.com/fractaledmind/litestream-ruby/pull/41))
 - Support configuration of custom `systemctl status` command ([rossta](https://github.com/fractaledmind/litestream-ruby/pull/39))
 - Fix litestream showing as "not running" in Docker ([AxelTheGerman](https://github.com/fractaledmind/litestream-ruby/pull/44))
+Update config example in README ([jgsheppa](https://github.com/fractaledmind/litestream-ruby/pull/45))
 
 ## [0.11.2] - 2024-09-06
 
