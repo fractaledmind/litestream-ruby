@@ -269,7 +269,7 @@ If you use Devise for authentication in your app, you can also restrict access t
 
 ```ruby
 authenticate :user, -> (user) { user.admin? } do
-  mount LitestreamRails::Engine, at: "/litestream"
+  mount Litestream::Engine, at: "/litestream"
 end
 ```
 
