@@ -40,7 +40,7 @@
 <br>
 
 <section id="databases" class="">
-  <div class="mb-3 flex items-center justify-between border-b">
+  <div class="mb-3 flex items-center justify-between border-b dark:border-gray-800">
     <h2 class="text-2xl font-bold">Databases</h2>
     <p class="text-right">Total: <strong><%= @databases.size %></strong></p>
   </div>
@@ -59,7 +59,7 @@
         <section id="generations" class="ml-6">
           <% database['generations'].each do |generation| %>
             <details id="<%= generation['generation'] %>" open="open">
-              <summary class="cursor-pointer rounded p-2 hover:bg-gray-50">
+              <summary class="cursor-pointer rounded p-2 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <code><%= generation['generation'] %></code>
                 (<em><%= generation['lag'] %> lag</em>)
               </summary>
@@ -85,24 +85,24 @@
                     <table class="min-w-full divide-y divide-gray-300">
                       <thead>
                         <tr>
-                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-left text-sm font-semibold text-gray-900">Created at</th>
-                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900">Index</th>
-                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900">Size</th>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Created at</th>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Index</th>
+                          <th scope="col" class="whitespace-nowrap px-2 py-2 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Size</th>
                         </tr>
                       </thead>
 
-                      <tbody class="bg-white">
+                      <tbody class="bg-white dark:bg-gray-900">
                         <% generation['snapshots'].each do |snapshot| %>
-                          <tr class="align-top even:bg-gray-50">
-                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900">
+                          <tr class="align-top even:bg-gray-50 dark:even:bg-gray-800">
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
                               <abbr title="<%= snapshot['created'] %>" class="underline decoration-dashed decoration-gray-500 cursor-help">
                                 <time datetime="<%= snapshot['created'] %>"><%= DateTime.parse(snapshot['created']).to_formatted_s(:db) %></time>
                               </abbr>
                             </td>
-                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 text-right">
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">
                               <%= snapshot['index'] %>
                             </td>
-                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 text-right">
+                            <td scope="col" class="whitespace-nowrap px-2 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">
                               <%= number_to_human_size snapshot['size'] %>
                             </td>
                           </tr>
