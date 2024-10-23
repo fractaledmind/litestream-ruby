@@ -2,7 +2,7 @@
 # All configuration options will be available as environment variables, e.g.
 # config.replica_bucket becomes LITESTREAM_REPLICA_BUCKET
 # This allows you to configure Litestream using Rails encrypted credentials,
-# or some other mechanism where the values are only avaialble at runtime.
+# or some other mechanism where the values are only available at runtime.
 
 Rails.application.configure do
   # An example of using Rails encrypted credentials to configure Litestream.
