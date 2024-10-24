@@ -435,13 +435,6 @@ Litestream::Commands.restore('storage/production.sqlite3')
 # => "storage/production-20240418090048.sqlite3"
 ```
 
-Finally, you can verify the integrity of a restored database using the `Litestream::Commands.verify` method, which returns a hash with the "size" and "tables" keys for the original and restored databases:
-
-```ruby
-Litestream::Commands.verify('storage/production.sqlite3')
-# => {"size"=>{"original"=>21688320, "restored"=>21688320}, "tables"=>{"original"=>9, "restored"=>9}}
-```
-
 You _can_ start the replication process using the `Litestream::Commands.replicate` method, but this is not recommended. The replication process should be managed by Litestream itself, and you should not need to manually start it.
 
 ### Running commands from CLI
