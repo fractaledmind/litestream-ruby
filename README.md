@@ -92,6 +92,8 @@ dbs:
         secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
 ```
 
+This is the default for Amazon S3. The full range of possible replica types (e.g. other S3-compatible object storage servers) are covered in Litestream's [replica guides](https://litestream.io/guides/#replica-guides).
+
 The gem also provides a default initializer file at `config/initializers/litestream.rb` that allows you to configure these four environment variables referenced in the configuration file in Ruby. By providing a Ruby interface to these environment variables, you can use any method of storing secrets that you prefer. For example, the default generated file uses Rails' encrypted credentials to store your secrets:
 
 ```ruby
@@ -110,13 +112,12 @@ However, if you need manual control over the Litestream configuration, you can m
 
 In order to stream changes to your configured replicas, you need to start the Litestream replication process.
 
-The simplest way to run the Litestream replication process is use the Puma plugin provided by the gem. This allows you to run the Litestream replication process together with Puma and have Puma monitor and manage it. You just need to add
+The simplest way to run the Litestream replication process is use the Puma plugin provided by the gem. This allows you to run the Litestream replication process together with Puma and have Puma monitor and manage it. You just need to add the following to your `puma.rb` configuration:
 
 ```ruby
-plugin :litestream
+# Run litestream only in production.
+plugin :litestream if ENV.fetch("RAILS_ENV", "production") == "production"
 ```
-
-to your `puma.rb` configuration.
 
 If you would prefer to run the Litestream replication process separately from Puma, you can use the provided `litestream:replicate` rake task. This rake task will automatically load the configuration file and set the environment variables before starting the Litestream process.
 
@@ -220,7 +221,7 @@ You can verify the integrity of your backed-up databases using the gem's provide
 Litestream.verify! "storage/production.sqlite3"
 ```
 
-In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait 10 seconds to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file
+In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait 10 seconds to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
 
 1. exists,
 2. can be opened by SQLite, and
@@ -256,8 +257,8 @@ Second, you can configure the access credentials via the Rails configuration obj
 
 ```ruby
 # Set authentication credentials for Litestream
-config.litestream.username = Rails.application.credentials.litestream.username
-config.litestream.password = Rails.application.credentials.litestream.password
+config.litestream.username = Rails.application.credentials.dig(:litestream, :username)
+config.litestream.password = Rails.application.credentials.dig(:litestream, :password)
 ```
 
 Either way, if you have set a username and password, Litestream will use basic HTTP authentication.
@@ -294,7 +295,7 @@ config.middleware.use ActionDispatch::Flash
 
 ### Overwriting the views
 
-You can find the views in [`app/views`](https://github.com/fractaledmind/litestream/tree/main/app/views).
+You can find the views in [`app/views`](https://github.com/fractaledmind/litestream-ruby/tree/main/app/views).
 
 ```bash
 app/views/
@@ -362,7 +363,7 @@ You can also list the generations of a specific database:
 bin/rails litestream:generations -- --database=storage/production.sqlite3
 ```
 
-This will list all generations for the specified database, including stats about their lag behind the primary database and the time range they cover.
+This will list all generations for the specified database, including stats about their lag behind the primary database and the time range they cover:
 
 ```
 name  generation        lag     start                 end
@@ -461,7 +462,13 @@ litestream wal [arguments] DB_PATH|REPLICA_URL
 
 ### Using in development
 
-By default, installing the gem does not update your `Procfile.dev` file, and so Litestream will not be started in development. If you would like to test that your configuration is properly setup, you can manually add the `litestream:replicate` rake task to your `Procfile.dev` file. Just copy the `litestream` definition from the production `Procfile`. Then, in order to have a replication bucket for Litestream to point to, you can use a Docker instance of [MinIO](https://min.io/). MinIO is an S3-compatible object storage server that can be run locally. You can run a MinIO server with the following command:
+By default, if you install the gem and configure via `puma.rb` or `Procfile`, Litestream will not start in development.
+
+If you setup via `puma.rb`, then remove the conditional statement.
+
+If you setup via `Procfile`, you will need to update your `Procfile.dev` file. If you would like to test that your configuration is properly setup, you can manually add the `litestream:replicate` rake task to your `Procfile.dev` file. Just copy the `litestream` definition from the production `Procfile`. 
+
+In order to have a replication bucket for Litestream to point to, you can use a Docker instance of [MinIO](https://min.io/). MinIO is an S3-compatible object storage server that can be run locally. You can run a MinIO server with the following command:
 
 ```sh
 docker run -p 9000:9000 -p 9001:9001 minio/minio server /data --console-address ":9001"
