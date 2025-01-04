@@ -2,6 +2,8 @@ namespace :litestream do
   desc "Print the ENV variables needed for the Litestream config file"
   task env: :environment do
     puts "LITESTREAM_REPLICA_BUCKET=#{Litestream.replica_bucket}"
+    puts "LITESTREAM_REPLICA_REGION=#{Litestream.replica_region}"
+    puts "LITESTREAM_REPLICA_ENDPOINT=#{Litestream.replica_endpoint}"
     puts "LITESTREAM_ACCESS_KEY_ID=#{Litestream.replica_key_id}"
     puts "LITESTREAM_SECRET_ACCESS_KEY=#{Litestream.replica_access_key}"
 

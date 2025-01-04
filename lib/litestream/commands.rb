@@ -125,6 +125,8 @@ module Litestream
 
       def prepare(command, argv = {}, database = nil)
         ENV["LITESTREAM_REPLICA_BUCKET"] ||= Litestream.replica_bucket
+        ENV["LITESTREAM_REPLICA_REGION"] ||= Litestream.replica_region
+        ENV["LITESTREAM_REPLICA_ENDPOINT"] ||= Litestream.replica_endpoint
         ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.replica_key_id
         ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.replica_access_key
 
