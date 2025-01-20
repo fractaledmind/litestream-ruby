@@ -106,7 +106,7 @@ Rails.application.configure do
 end
 ```
 
-However, if you need manual control over the Litestream configuration, you can manually edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).
+However, if you need manual control over the Litestream configuration, you can manually edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  NB: If you configure a longer `sync-interval`, you may need to adjust `replication_sleep` when calling `Litestream.verify!`.
 
 ### Replication
 
@@ -221,7 +221,7 @@ You can verify the integrity of your backed-up databases using the gem's provide
 Litestream.verify! "storage/production.sqlite3"
 ```
 
-In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait 10 seconds to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
+In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait `replication_sleep` seconds (defaults to 10) to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
 
 1. exists,
 2. can be opened by SQLite, and
