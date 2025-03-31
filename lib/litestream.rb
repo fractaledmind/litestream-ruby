@@ -34,6 +34,7 @@ module Litestream
   end
 
   mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key, :systemctl_command
+  mattr_accessor :base_controller_class, default: "::ApplicationController"
 
   class << self
     def verify!(database_path)
