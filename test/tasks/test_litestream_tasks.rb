@@ -26,6 +26,8 @@ class TestLitestreamTasks < ActiveSupport::TestCase
 
       assert_equal <<~TXT, out
         LITESTREAM_REPLICA_BUCKET=
+        LITESTREAM_REPLICA_REGION=
+        LITESTREAM_REPLICA_ENDPOINT=
         LITESTREAM_ACCESS_KEY_ID=
         LITESTREAM_SECRET_ACCESS_KEY=
       TXT
