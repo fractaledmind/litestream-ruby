@@ -54,6 +54,7 @@ Supported platforms are:
 
 - arm64-darwin (macos-arm64)
 - x86_64-darwin (macos-x64)
+- aarch64-linux (linux-aarch64)
 - arm64-linux (linux-arm64)
 - x86_64-linux (linux-x64)
 
@@ -459,7 +460,7 @@ By default, if you install the gem and configure via `puma.rb` or `Procfile`, Li
 
 If you setup via `puma.rb`, then remove the conditional statement.
 
-If you setup via `Procfile`, you will need to update your `Procfile.dev` file. If you would like to test that your configuration is properly setup, you can manually add the `litestream:replicate` rake task to your `Procfile.dev` file. Just copy the `litestream` definition from the production `Procfile`. 
+If you setup via `Procfile`, you will need to update your `Procfile.dev` file. If you would like to test that your configuration is properly setup, you can manually add the `litestream:replicate` rake task to your `Procfile.dev` file. Just copy the `litestream` definition from the production `Procfile`.
 
 In order to have a replication bucket for Litestream to point to, you can use a Docker instance of [MinIO](https://min.io/). MinIO is an S3-compatible object storage server that can be run locally. You can run a MinIO server with the following command:
 
