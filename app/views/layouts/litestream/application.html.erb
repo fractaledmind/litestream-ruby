@@ -7,12 +7,12 @@
 
     <%= render "layouts/litestream/style" %>
   </head>
-  <body class="h-full flex flex-col">
+  <body class="h-full flex flex-col dark:bg-gray-900 dark:text-white">
     <main class="container mx-auto max-w-4xl mt-4 px-2 grow">
       <%= content_for?(:content) ? yield(:content) : yield %>
     </main>
 
-    <footer class="container mx-auto mt-24 flex items-center justify-between border-t px-2 py-4 text-base">
+    <footer class="container mx-auto mt-24 flex items-center justify-between border-t dark:border-gray-800 px-2 py-4 text-base">
       <p>
         <code><strong>Litestream</strong></code>&nbsp;&nbsp;|&nbsp;
         Made by <a href="https://twitter.com/fractaledmind" class="text-blue-500 hover:underline decoration-blue-500">@fractaledmind</a> and <a href="https://github.com/fractaledmind/litestream-ruby/graphs/contributors" class="text-blue-500 hover:underline decoration-blue-500">friends</a>! Want to help? It's <a href="https://github.com/fractaledmind/litestream-ruby" class="text-blue-500 hover:underline decoration-blue-500">open source</a>!
@@ -22,7 +22,7 @@
     <div class="fixed top-0 left-0 right-0 text-center py-2">
       <% if notice.present? %>
         <p id="notice"
-           class="py-2 px-3 bg-green-50 text-green-500 font-medium rounded-lg inline-block"
+           class="py-2 px-3 bg-green-50 dark:bg-green-900 text-green-500 font-medium rounded-lg inline-block"
            data-controller="fade">
           <%= notice.html_safe %>
         </p>
@@ -30,7 +30,7 @@
 
       <% if alert.present? %>
         <p id="alert"
-           class="py-2 px-3 bg-red-50 text-red-500 font-medium rounded-lg inline-block"
+           class="py-2 px-3 bg-red-50 dark:bg-red-900 text-red-500 font-medium rounded-lg inline-block"
            data-controller="fade">
           <%= alert.html_safe %>
         </p>
