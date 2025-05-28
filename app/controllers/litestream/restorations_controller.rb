@@ -9,7 +9,7 @@ module Litestream
       now = Time.now.utc.strftime("%Y%m%d%H%M%S")
       backup = File.join(dir, "#{base}-#{now}#{ext}")
 
-      Litestream::Commands.restore(database, async: false, **{"-o" => backup})
+      Litestream::Commands.restore(database, **{"-o" => backup})
 
       redirect_to root_path, notice: "Restored to <code>#{backup}</code>."
     end
