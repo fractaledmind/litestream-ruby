@@ -152,12 +152,13 @@ module Litestream
 
     def process_info
       litestream_replicate_ps = `ps -ax | grep litestream | grep replicate`
-      systemctl_exit_code = $?.exitstatus
-      return unless systemctl_exit_code.zero?
+      exit_code = $?.exitstatus
+      return unless exit_code.zero?
 
       info = {}
       litestream_replicate_ps.chomp.split("\n").each do |line|
         next unless line.include?("litestream replicate")
+
         pid, * = line.split(" ")
         info[:pid] = pid
         state, _, lstart = `ps -o "state,lstart" #{pid}`.chomp.split("\n").last.partition(/\s+/)
