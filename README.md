@@ -157,18 +157,22 @@ The Litestream `replicate` command supports the following options, which can be 
 
 You can restore any replicated database at any point using the gem's provided `litestream:restore` rake task. This rake task requires that you specify which specific database you want to restore. As with the `litestream:replicate` task, you pass arguments to the rake task via argument forwarding. For example, to restore the production database, you would do the following:
 
-Note: During the restoration process, you need to prevent any interaction with ActiveRecord/SQLite. If there is any interaction, Rails might regenerate the production database and prevent restoration via litestream. If this happens, you might get a "cannot restore, output path already exists" error.
-1. Rename the production databases (RECOMMENDED) or alternatively delete (production.sqlite3/production.sqlite3-shm/production.sqlite3-wal). To delete the production databases locally, you can run the following at your own risk:
+> [!NOTE]  
+> During the restoration process, you need to prevent any interaction with ActiveRecord/SQLite, such as from a running `rails server` or `rails console` instance. If there is any interaction, Rails might regenerate the production database and prevent restoration via litestream. If this happens, you might get a "cannot restore, output path already exists" error.
+
+1. Rename the production (`production.sqlite3`, `production.sqlite3-shm`, and `production.sqlite3-wal`) databases (**recommended**) or alternatively delete. To delete the production databases locally, you can run the following at your own risk:
    ```shell
    # DANGEROUS OPERATION, consider renaming database files instead
    bin/rails db:drop DISABLE_DATABASE_ENVIRONMENT_CHECK=1
    ```
+
 2. Run restore command:
    ```shell
    bin/rails litestream:restore -- --database=storage/production.sqlite3
    # or
    bundle exec rake litestream:restore -- --database=storage/production.sqlite3
    ```
+
 3. Restart your Rails application or Docker container if applicable.
 
 You can restore any of the databases specified in your `config/litestream.yml` file. The `--database` argument should be the path to the database file you want to restore and must match the value for the `path` key of one of your configured databases. The `litestream:restore` rake task will automatically load the configuration file and set the environment variables before calling the Litestream executable.
