@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+## [0.13.0] - 2025-06-03
+
+- Adds ability to configure default config path ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/54))
+- Fix replication process detection ([@hschne](https://github.com/fractaledmind/litestream-ruby/pull/63))
+- Remove locale check ([@hschne](https://github.com/fractaledmind/litestream-ruby/pull/64))
+- Make base controller class configurable ([@zachasme](https://github.com/fractaledmind/litestream-ruby/pull/60))
+- Support configuring replica region and endpoint ([@MatheusRich](https://github.com/fractaledmind/litestream-ruby/pull/58))
+- configurable sleep time for Litestream.verify! ([@spinosa](https://github.com/fractaledmind/litestream-ruby/pull/59))
+- docs: update README for restoration ([@oandalib](https://github.com/fractaledmind/litestream-ruby/pull/52))
+- Build the aarch64-linux gem ([@fcatuhe](https://github.com/fractaledmind/litestream-ruby/pull/56))
+- Add dark mode to dashboard ([@visini](https://github.com/fractaledmind/litestream-ruby/pull/47))
+
 ## [0.12.0] - 2024-09-06
 
 - Add `wal` command ([alxvernier](https://github.com/fractaledmind/litestream-ruby/pull/41))
