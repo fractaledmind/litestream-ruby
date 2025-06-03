@@ -129,7 +129,7 @@ module Litestream
         ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.replica_access_key
 
         args = {
-          "--config" => Rails.root.join("config", "litestream.yml").to_s
+          "--config" => Litestream.config_path.to_s
         }.merge(argv.stringify_keys).to_a.flatten.compact
         cmd = [executable, command, *args, database].compact
         puts cmd.inspect if ENV["DEBUG"]

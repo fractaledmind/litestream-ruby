@@ -33,7 +33,8 @@ module Litestream
     end
   end
 
-  mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key, :systemctl_command
+  mattr_writer :username, :password, :queue, :replica_bucket, :replica_key_id, :replica_access_key, :systemctl_command,
+    :config_path
 
   class << self
     def verify!(database_path)
@@ -87,6 +88,10 @@ module Litestream
 
     def systemctl_command
       @@systemctl_command || "systemctl status litestream"
+    end
+
+    def config_path
+      @@config_path || Rails.root.join("config", "litestream.yml")
     end
 
     def replicate_process
