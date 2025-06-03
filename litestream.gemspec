@@ -25,18 +25,16 @@ Gem::Specification.new do |spec|
   spec.executables << "litestream"
 
   # Uncomment to register a new dependency of your gem
-  spec.add_dependency "logfmt", ">= 0.0.10"
   spec.add_dependency "sqlite3"
   ">= 7.0".tap do |rails_version|
     spec.add_dependency "actionpack", rails_version
     spec.add_dependency "actionview", rails_version
-    spec.add_dependency "activesupport", rails_version
     spec.add_dependency "activejob", rails_version
+    spec.add_dependency "activesupport", rails_version
     spec.add_dependency "railties", rails_version
   end
-  spec.add_development_dependency "rubyzip"
   spec.add_development_dependency "rails"
-  spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency "rubyzip"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
