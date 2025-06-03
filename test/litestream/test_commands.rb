@@ -15,6 +15,7 @@ class TestCommands < ActiveSupport::TestCase
     Litestream.replica_bucket = ENV["LITESTREAM_REPLICA_BUCKET"] = nil
     Litestream.replica_key_id = ENV["LITESTREAM_ACCESS_KEY_ID"] = nil
     Litestream.replica_access_key = ENV["LITESTREAM_SECRET_ACCESS_KEY"] = nil
+    Litestream.config_path = nil
   end
 
   class TestReplicateCommand < TestCommands
@@ -421,6 +422,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+
+    def test_databases_read_from_custom_configured_litestream_config_path
+      Litestream.config_path = "dummy/config/litestream/production.yml"
+
+      stub = proc do |cmd, _async|
+        _executable, _command, *argv = cmd
+
+        assert_equal 2, argv.size
+        assert_equal "--config", argv[0]
+        assert_match Regexp.new("dummy/config/litestream/production.yml"), argv[1]
+      end
+
+      Litestream::Commands.stub :run, stub do
+        Litestream::Commands.databases
+      end
     end
   end
 
