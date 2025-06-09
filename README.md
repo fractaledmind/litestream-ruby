@@ -118,7 +118,7 @@ Rails.application.configure do
   # Base controller used for Litestream dashboard
   config.litestream.base_controller_class = "MyApplicationController"
   # Set the location of the Litestream config
-  config.config_path = "config/litestream.yml"
+  config.litestream.config_path = "config/litestream.yml"
 end
 ```
 
