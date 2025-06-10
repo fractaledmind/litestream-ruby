@@ -80,24 +80,27 @@ LITESTREAM_INSTALL_DIR=.bin
 
 You configure the Litestream executable through the [`config/litestream.yml` file](https://litestream.io/reference/config/), which is a standard Litestream configuration file as if Litestream was running in a traditional installation.
 
-The gem streamlines the configuration process by providing a default configuration file for you. This configuration file will backup all SQLite databases defined in your `config/database.yml` file to one replication bucket. In order to ensure that no secrets are stored in plain-text in your repository, this configuration file leverages Litestream's support for environment variables. The default configuration file looks like this if you only have one SQLite database:
+The gem streamlines the configuration process by providing a default configuration file for you. This configuration file will backup all SQLite databases defined in your `config/database.yml` file to one replication bucket. In order to ensure that no secrets are stored in plain-text in your repository, this configuration file leverages Litestream's support for environment variables. Inspect which environment variables are available by running the `bin/rails litestream:env` command.
+
+The default configuration file looks like this if you only have one SQLite database:
 
 ```yaml
 dbs:
   - path: storage/production.sqlite3
     replicas:
       - type: s3
-        bucket: $LITESTREAM_REPLICA_BUCKET
         path: storage/production.sqlite3
+        bucket: $LITESTREAM_REPLICA_BUCKET
         access-key-id: $LITESTREAM_ACCESS_KEY_ID
         secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
 ```
 
 This is the default for Amazon S3. The full range of possible replica types (e.g. other S3-compatible object storage servers) are covered in Litestream's [replica guides](https://litestream.io/guides/#replica-guides).
 
-The gem also provides a default initializer file at `config/initializers/litestream.rb` that allows you to configure these three environment variables referenced in the configuration file in Ruby. By providing a Ruby interface to these environment variables, you can use any method of storing secrets that you prefer. For example, the default generated file uses Rails' encrypted credentials to store your secrets:
+The gem also provides a default initializer file at `config/initializers/litestream.rb` that allows you to configure various variables referenced in the configuration file in Ruby. By providing a Ruby interface to these environment variables, you can use your preferred method of storing secrets. For example, the default generated file uses Rails' encrypted credentials to store your secrets.
 
 ```ruby
+# config/initializers/litestream.rb
 Rails.application.configure do
   litestream_credentials = Rails.application.credentials.litestream
 
@@ -107,7 +110,21 @@ Rails.application.configure do
 end
 ```
 
-However, if you need manual control over the Litestream configuration, you can manually edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  NB: If you configure a longer `sync-interval`, you may need to adjust `replication_sleep` when calling `Litestream.verify!`.
+Outside of configuring Litestream's replication, you may also configure various other aspects of `litestream-ruby` itself. 
+
+```ruby
+# config/initializers/litestream.rb
+Rails.application.configure do
+  # ...
+
+  # Base controller used for Litestream dashboard
+  config.litestream.base_controller_class = "MyApplicationController"
+  # Set the location of the Litestream config
+  config.litestream.config_path = "config/litestream.yml"
+end
+```
+
+However, if you need manual control over the Litestream configuration, you can edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  
 
 ### Replication
 
@@ -232,6 +249,7 @@ You can verify the integrity of your backed-up databases using the gem's provide
 
 ```ruby
 Litestream.verify! "storage/production.sqlite3"
+Litestream.verify!(replication_sleep: 10) "storage/production.sqlite3"
 ```
 
 In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait `replication_sleep` seconds (defaults to 10) to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
@@ -241,6 +259,9 @@ In order to verify that the backup for that database is both restorable and fres
 3. has up-to-date data.
 
 After restoring the backup, the `Litestream.verify!` method will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task or `Litestream::Commands.restore` method instead.
+
+> [!NOTE]
+> If you configure Litestream's [`sync-interval`](https://litestream.io/reference/config/#replica-settings) to be longer than the default `replication_sleep` value of 10 seconds, you will need to adjust `replication_sleep` to a value larger than `sync-interval`; otherwise, `Litestream.verify!` may appear to fail where it actually simply didn't wait long enough for replication. 
 
 ### Dashboard
 
