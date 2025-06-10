@@ -110,17 +110,21 @@ Rails.application.configure do
 end
 ```
 
-However, if you need manual control over the Litestream configuration, you can manually edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  Outside of configuring Litestream, you may also configure various other aspects of `litestream-ruby` itself. 
+Outside of configuring Litestream's replication, you may also configure various other aspects of `litestream-ruby` itself. 
 
 ```ruby
 # config/initializers/litestream.rb
 Rails.application.configure do
+  # ...
+
   # Base controller used for Litestream dashboard
   config.litestream.base_controller_class = "MyApplicationController"
   # Set the location of the Litestream config
   config.litestream.config_path = "config/litestream.yml"
 end
 ```
+
+However, if you need manual control over the Litestream configuration, you can edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  
 
 ### Replication
 
