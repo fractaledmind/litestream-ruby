@@ -80,7 +80,7 @@ LITESTREAM_INSTALL_DIR=.bin
 
 You configure the Litestream executable through the [`config/litestream.yml` file](https://litestream.io/reference/config/), which is a standard Litestream configuration file as if Litestream was running in a traditional installation.
 
-The gem streamlines the configuration process by providing a default configuration file for you. This configuration file will backup all SQLite databases defined in your `config/database.yml` file to one replication bucket. In order to ensure that no secrets are stored in plain-text in your repository, this configuration file leverages Litestream's support for environment variables. Inspect which environment variables are available run `litestream:env`.
+The gem streamlines the configuration process by providing a default configuration file for you. This configuration file will backup all SQLite databases defined in your `config/database.yml` file to one replication bucket. In order to ensure that no secrets are stored in plain-text in your repository, this configuration file leverages Litestream's support for environment variables. Inspect which environment variables are available by running the `bin/rails litestream:env` command.
 
 The default configuration file looks like this if you only have one SQLite database:
 
