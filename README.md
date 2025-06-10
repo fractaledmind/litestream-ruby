@@ -252,13 +252,16 @@ Litestream.verify! "storage/production.sqlite3"
 Litestream.verify!(replication_sleep: 10) "storage/production.sqlite3"
 ```
 
-In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait `replication_sleep` seconds (defaults to 10) to give the Litestream utility time to replicate that change to whatever storage providers you have configured. Note that if you configure a longer `sync-interval`, you may need to adjust `replication_sleep` to a longer period. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
+In order to verify that the backup for that database is both restorable and fresh, the method will add a new row to that database under the `_litestream_verification` table, which it will create if needed. It will then wait `replication_sleep` seconds (defaults to 10) to give the Litestream utility time to replicate that change to whatever storage providers you have configured. After that, it will download the latest backup from that storage provider and ensure that this verification row is present in the backup. If the verification row is _not_ present, the method will raise a `Litestream::VerificationFailure` exception. This check ensures that the restored database file:
 
 1. exists,
 2. can be opened by SQLite, and
 3. has up-to-date data.
 
 After restoring the backup, the `Litestream.verify!` method will delete the restored database file. If you need the restored database file, use the `litestream:restore` rake task or `Litestream::Commands.restore` method instead.
+
+> [!NOTE]
+> If you configure Litestream's [`sync-interval`](https://litestream.io/reference/config/#replica-settings) to be longer than the default `replication_sleep` value of 10 seconds, you will need to adjust `replication_sleep` to a value larger than `sync-interval`; otherwise, `Litestream.verify!` may appear to fail where it actually simply didn't wait long enough for replication. 
 
 ### Dashboard
 
