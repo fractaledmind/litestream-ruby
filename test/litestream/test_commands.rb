@@ -27,7 +27,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
       end
-      Litestream::Commands.stub :run_async, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate
       end
     end
@@ -42,7 +42,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "--no-expand-env", argv[2]
       end
-      Litestream::Commands.stub :run_async, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--no-expand-env" => nil)
       end
     end
@@ -58,7 +58,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :run_async, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--exec" => "command")
       end
     end
@@ -74,7 +74,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :run_async, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--exec": "command")
       end
     end
@@ -88,7 +88,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--config", argv[0]
         assert_equal "CONFIG", argv[1]
       end
-      Litestream::Commands.stub :run_async, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--config" => "CONFIG")
       end
     end
@@ -96,7 +96,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_bucket_env_var_from_config_when_env_var_not_set
       Litestream.replica_bucket = "mybkt"
 
-      Litestream::Commands.stub :run_async, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -108,7 +108,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_key_id_env_var_from_config_when_env_var_not_set
       Litestream.replica_key_id = "mykey"
 
-      Litestream::Commands.stub :run_async, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -120,7 +120,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_access_key_env_var_from_config_when_env_var_not_set
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run_async, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -134,7 +134,7 @@ class TestCommands < ActiveSupport::TestCase
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run_async, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -152,7 +152,7 @@ class TestCommands < ActiveSupport::TestCase
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run_async, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 

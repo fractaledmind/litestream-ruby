@@ -63,8 +63,8 @@ namespace :litestream do
     if (separator_index = ARGV.index("--"))
       ARGV.slice(separator_index + 1, ARGV.length)
         .map { |pair| pair.split("=") }
-        .each { |opt| options[opt[0].to_sym] = opt[1] || nil }
+        .each { |opt| options[opt[0]] = opt[1] || nil }
     end
-    options.symbolize_keys
+    options.symbolize_keys!
   end
 end

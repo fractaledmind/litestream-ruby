@@ -94,9 +94,12 @@ module Litestream
         exe_file
       end
 
+      # Replicate can be run either as a fork or in the same process, depending on the context.
+      # Puma will start replication as a forked process, while running replication from a rake
+      # tasks won't.
       def replicate(async: false, **argv)
         cmd = prepare("replicate", argv)
-        run_async(cmd, async: async)
+        run_replicate(cmd, async: async)
       rescue
         raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`"
       end
@@ -164,28 +167,13 @@ module Litestream
         rows.map { keys.zip(_1).to_h }
       end
 
-      def run_async(cmd, async:)
+      def run_replicate(cmd, async:)
         if async
           exec(*cmd) if fork.nil?
         else
+          # When running in-process, we capture output continuously and write to stdout.
           IO.popen(cmd, err: [:child, :out]) do |io|
             io.each_line { |line| puts line }
-          end
-        end
-      end
-
-      module Output
-        class << self
-          def format(data)
-            headers = data.first.keys.map(&:to_s)
-            widths = headers.map.with_index { |h, i|
-              [h.length, data.map { |r| r[data.first.keys[i]].to_s.length }.max].max
-            }
-
-            format_str = widths.map { |w| "%-#{w}s" }.join("  ")
-            ([headers] + data.map(&:values)).map { |row|
-              sprintf(format_str, *row.map(&:to_s))
-            }.join("\n")
           end
         end
       end
