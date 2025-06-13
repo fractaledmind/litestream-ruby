@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.14.0] - 2025-06-14
+
+- Change async behaviour of replicate and other commands ([@hschne](https://github.com/fractaledmind/litestream-ruby/pull/62))
+
 ## [0.13.0] - 2025-06-03
 
 - Adds ability to configure default config path ([@rossta](https://github.com/fractaledmind/litestream-ruby/pull/54))

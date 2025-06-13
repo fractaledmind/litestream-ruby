@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    litestream (0.13.0)
+    litestream (0.14.0)
       actionpack (>= 7.0)
       actionview (>= 7.0)
       activejob (>= 7.0)
