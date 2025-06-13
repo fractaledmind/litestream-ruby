@@ -1,5 +1,4 @@
 require_relative "upstream"
-require "logfmt"
 
 module Litestream
   module Commands
@@ -20,6 +19,24 @@ module Litestream
 
     # raised when a litestream command fails
     CommandFailedException = Class.new(StandardError)
+
+    module Output
+      class << self
+        def format(data)
+          return "" if data.nil? || data.empty?
+
+          headers = data.first.keys.map(&:to_s)
+          widths = headers.map.with_index { |h, i|
+            [h.length, data.map { |r| r[data.first.keys[i]].to_s.length }.max].max
+          }
+
+          format_str = widths.map { |w| "%-#{w}s" }.join("  ")
+          ([headers] + data.map(&:values)).map { |row|
+            sprintf(format_str, *row.map(&:to_s))
+          }.join("\n")
+        end
+      end
+    end
 
     class << self
       def platform
@@ -77,44 +94,49 @@ module Litestream
         exe_file
       end
 
+      # Replicate can be run either as a fork or in the same process, depending on the context.
+      # Puma will start replication as a forked process, while running replication from a rake
+      # tasks won't.
       def replicate(async: false, **argv)
-        execute("replicate", argv, async: async, tabled_output: false)
+        cmd = prepare("replicate", argv)
+        run_replicate(cmd, async: async)
+      rescue
+        raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`"
       end
 
-      def restore(database, async: false, **argv)
+      def restore(database, **argv)
         raise DatabaseRequiredException, "database argument is required for restore command, e.g. litestream:restore -- --database=path/to/database.sqlite" if database.nil?
-        argv.stringify_keys!
 
-        execute("restore", argv, database, async: async, tabled_output: false)
+        execute("restore", argv, database, tabled_output: false)
       end
 
-      def databases(async: false, **argv)
-        execute("databases", argv, async: async, tabled_output: true)
+      def databases(**argv)
+        execute("databases", argv)
       end
 
-      def generations(database, async: false, **argv)
+      def generations(database, **argv)
         raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database, async: async, tabled_output: true)
+        execute("generations", argv, database)
       end
 
-      def snapshots(database, async: false, **argv)
+      def snapshots(database, **argv)
         raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("snapshots", argv, database, async: async, tabled_output: true)
+        execute("snapshots", argv, database)
       end
 
-      def wal(database, async: false, **argv)
+      def wal(database, **argv)
         raise DatabaseRequiredException, "database argument is required for wal command, e.g. litestream:wal -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("wal", argv, database, async: async, tabled_output: true)
+        execute("wal", argv, database)
       end
 
       private
 
-      def execute(command, argv = {}, database = nil, async: false, tabled_output: false)
+      def execute(command, argv = {}, database = nil, tabled_output: true)
         cmd = prepare(command, argv, database)
-        results = run(cmd, async: async, tabled_output: tabled_output)
+        results = run(cmd, tabled_output: tabled_output)
 
         if Array === results && results.one? && results[0]["level"] == "ERROR"
           raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`; Reason: #{results[0]["error"]}"
@@ -139,20 +161,23 @@ module Litestream
         cmd
       end
 
-      def run(cmd, async: false, tabled_output: false)
-        if async
-          # To release the resources of the Ruby process, just fork and exit.
-          # The forked process executes litestream and replaces itself.
-          exec(*cmd) if fork.nil?
-        else
-          stdout = `#{cmd.join(" ")}`.chomp
-          tabled_output ? text_table_to_hashes(stdout) : stdout.split("\n").map { Logfmt.parse(_1) }
-        end
+      def run(cmd, tabled_output:)
+        stdout = `#{cmd.join(" ")}`.chomp
+        return stdout unless tabled_output
+
+        keys, *rows = stdout.split("\n").map { _1.split(/\s+/) }
+        rows.map { keys.zip(_1).to_h }
       end
 
-      def text_table_to_hashes(string)
-        keys, *rows = string.split("\n").map { _1.split(/\s+/) }
-        rows.map { keys.zip(_1).to_h }
+      def run_replicate(cmd, async:)
+        if async
+          exec(*cmd) if fork.nil?
+        else
+          # When running in-process, we capture output continuously and write to stdout.
+          IO.popen(cmd, err: [:child, :out]) do |io|
+            io.each_line { |line| puts line }
+          end
+        end
       end
     end
   end

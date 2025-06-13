@@ -20,7 +20,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestReplicateCommand < TestCommands
     def test_replicate_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
@@ -28,13 +28,13 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--config", argv[0]
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
       end
-      Litestream::Commands.stub :run, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate
       end
     end
 
     def test_replicate_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
@@ -43,13 +43,13 @@ class TestCommands < ActiveSupport::TestCase
         assert_match Regexp.new("dummy/config/litestream.yml"), argv[1]
         assert_equal "--no-expand-env", argv[2]
       end
-      Litestream::Commands.stub :run, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--no-expand-env" => nil)
       end
     end
 
     def test_replicate_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
@@ -59,13 +59,13 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :run, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--exec" => "command")
       end
     end
 
     def test_replicate_with_symbol_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
@@ -75,13 +75,13 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--exec", argv[2]
         assert_equal "command", argv[3]
       end
-      Litestream::Commands.stub :run, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--exec": "command")
       end
     end
 
     def test_replicate_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "replicate", command
@@ -89,7 +89,7 @@ class TestCommands < ActiveSupport::TestCase
         assert_equal "--config", argv[0]
         assert_equal "CONFIG", argv[1]
       end
-      Litestream::Commands.stub :run, stub do
+      Litestream::Commands.stub :run_replicate, stub do
         Litestream::Commands.replicate("--config" => "CONFIG")
       end
     end
@@ -97,7 +97,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_bucket_env_var_from_config_when_env_var_not_set
       Litestream.replica_bucket = "mybkt"
 
-      Litestream::Commands.stub :run, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -109,7 +109,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_key_id_env_var_from_config_when_env_var_not_set
       Litestream.replica_key_id = "mykey"
 
-      Litestream::Commands.stub :run, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -121,7 +121,7 @@ class TestCommands < ActiveSupport::TestCase
     def test_replicate_sets_replica_access_key_env_var_from_config_when_env_var_not_set
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -135,7 +135,7 @@ class TestCommands < ActiveSupport::TestCase
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -153,7 +153,7 @@ class TestCommands < ActiveSupport::TestCase
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
 
-      Litestream::Commands.stub :run, nil do
+      Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
       end
 
@@ -165,7 +165,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestRestoreCommand < TestCommands
     def test_restore_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -180,7 +180,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -196,7 +196,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -213,7 +213,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_restore_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "restore", command
@@ -298,7 +298,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestDatabasesCommand < TestCommands
     def test_databases_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
@@ -312,7 +312,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
@@ -327,7 +327,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
@@ -343,7 +343,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_databases_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "databases", command
@@ -443,7 +443,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestGenerationsCommand < TestCommands
     def test_generations_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
@@ -458,7 +458,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
@@ -474,7 +474,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
@@ -491,7 +491,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_generations_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "generations", command
@@ -576,7 +576,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestSnapshotsCommand < TestCommands
     def test_snapshots_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
@@ -591,7 +591,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
@@ -607,7 +607,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
@@ -624,7 +624,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_snapshots_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "snapshots", command
@@ -709,7 +709,7 @@ class TestCommands < ActiveSupport::TestCase
 
   class TestWalCommand < TestCommands
     def test_wal_with_no_options
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "wal", command
@@ -724,7 +724,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_wal_with_boolean_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "wal", command
@@ -740,7 +740,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_wal_with_string_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "wal", command
@@ -757,7 +757,7 @@ class TestCommands < ActiveSupport::TestCase
     end
 
     def test_wal_with_config_option
-      stub = proc do |cmd, async|
+      stub = proc do |cmd|
         executable, command, *argv = cmd
         assert_match Regexp.new("exe/test/litestream"), executable
         assert_equal "wal", command
@@ -837,6 +837,39 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+    end
+  end
+
+  class TestOutput < ActiveSupport::TestCase
+    def test_output_formatting_generates_table_with_data
+      data = [
+        {path: "/storage/database.db", replicas: "s3"},
+        {path: "/storage/another-database.db", replicas: "s3"}
+      ]
+
+      result = Litestream::Commands::Output.format(data)
+      lines = result.split("\n")
+
+      assert_equal 3, lines.length
+
+      assert_includes lines[0], "path"
+      assert_includes lines[0], "replicas"
+      assert_includes lines[1], "/storage/database.db"
+      assert_includes lines[2], "/storage/another-database.db"
+    end
+
+    def test_output_formatting_generates_formatted_table
+      data = [
+        {path: "/storage/database.db", replicas: "s3"},
+        {path: "/storage/another-database.db", replicas: "s3"}
+      ]
+
+      result = Litestream::Commands::Output.format(data)
+      lines = result.split("\n")
+
+      replicas_pos = lines[0].index("replicas")
+      assert_equal replicas_pos, lines[1].index("s3")
+      assert_equal replicas_pos, lines[2].index("s3")
     end
   end
 end
