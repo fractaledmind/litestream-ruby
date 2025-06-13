@@ -33,8 +33,7 @@ module Litestream
     end
   end
 
-  mattr_writer :username, :password, :queue, :replica_bucket, :replica_region, :replica_endpoint, :replica_key_id, :replica_access_key, :systemctl_command,
-    :config_path
+  mattr_writer :username, :password, :queue, :replica_bucket, :replica_region, :replica_endpoint, :replica_key_id, :replica_access_key, :systemctl_command, :config_path
   mattr_accessor :base_controller_class, default: "::ApplicationController"
 
   class << self
