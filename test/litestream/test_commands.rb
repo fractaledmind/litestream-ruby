@@ -840,6 +840,54 @@ class TestCommands < ActiveSupport::TestCase
     end
   end
 
+  class TestRunMethod < TestCommands
+    def test_run_method_handles_paths_with_spaces
+      # Create a command with a path containing spaces
+      cmd = ["/usr/bin/echo", "hello world", "/path with spaces/file.txt"]
+      
+      # Stub the backtick execution to capture what would be executed
+      executed_command = nil
+      stubbed_backticks = proc do |command_string|
+        executed_command = command_string
+        "mocked output"
+      end
+      
+      # Test that the command is properly escaped
+      Litestream::Commands.stub :`, stubbed_backticks do
+        result = Litestream::Commands.send(:run, cmd, tabled_output: false)
+        
+        # The result should be the mocked output
+        assert_equal "mocked output", result
+        
+        # Check that the executed command is properly escaped
+        # With fixed implementation using Shellwords.shelljoin
+        # This ensures spaces are properly handled
+        expected_command = "/usr/bin/echo hello\\ world /path\\ with\\ spaces/file.txt"
+        assert_equal expected_command, executed_command
+      end
+    end
+
+    def test_run_method_handles_simple_commands_without_spaces
+      # Test that simple commands still work
+      cmd = ["/usr/bin/echo", "hello", "world"]
+      
+      executed_command = nil
+      stubbed_backticks = proc do |command_string|
+        executed_command = command_string
+        "simple output"
+      end
+      
+      Litestream::Commands.stub :`, stubbed_backticks do
+        result = Litestream::Commands.send(:run, cmd, tabled_output: false)
+        
+        assert_equal "simple output", result
+        # Simple commands should still work fine
+        expected_command = "/usr/bin/echo hello world"
+        assert_equal expected_command, executed_command
+      end
+    end
+  end
+
   class TestOutput < ActiveSupport::TestCase
     def test_output_formatting_generates_table_with_data
       data = [

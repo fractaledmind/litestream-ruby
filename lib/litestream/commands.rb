@@ -1,4 +1,5 @@
 require_relative "upstream"
+require "shellwords"
 
 module Litestream
   module Commands
@@ -162,7 +163,7 @@ module Litestream
       end
 
       def run(cmd, tabled_output:)
-        stdout = `#{cmd.join(" ")}`.chomp
+        stdout = `#{Shellwords.shelljoin(cmd)}`.chomp
         return stdout unless tabled_output
 
         keys, *rows = stdout.split("\n").map { _1.split(/\s+/) }
