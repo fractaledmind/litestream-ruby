@@ -68,7 +68,7 @@ class TestLitestream < Minitest::Test
 
     stubbed_backticks = proc do |arg|
       case arg
-      when "ps -ax | grep litestream | grep replicate"
+      when "ps -ef | grep litestream | grep replicate"
         stubbed_ps_list
       when %(ps -o "state,lstart" 40364)
         stubbed_ps_status

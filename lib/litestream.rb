@@ -164,7 +164,7 @@ module Litestream
     end
 
     def process_info
-      litestream_replicate_ps = `ps -ax | grep litestream | grep replicate`
+      litestream_replicate_ps = `ps -ef | grep litestream | grep replicate`
       exit_code = $?.exitstatus
       return unless exit_code.zero?
 
