@@ -151,6 +151,8 @@ module Litestream
         ENV["LITESTREAM_REPLICA_ENDPOINT"] ||= Litestream.replica_endpoint
         ENV["LITESTREAM_ACCESS_KEY_ID"] ||= Litestream.replica_key_id
         ENV["LITESTREAM_SECRET_ACCESS_KEY"] ||= Litestream.replica_access_key
+        ENV["LITESTREAM_AGE_RECIPIENT"] ||= Litestream.age_recipient
+        ENV["LITESTREAM_AGE_SECRET_KEY"] ||= Litestream.age_secret_key
 
         args = {
           "--config" => Litestream.config_path.to_s

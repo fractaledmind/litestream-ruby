@@ -15,6 +15,8 @@ class TestCommands < ActiveSupport::TestCase
     Litestream.replica_bucket = ENV["LITESTREAM_REPLICA_BUCKET"] = nil
     Litestream.replica_key_id = ENV["LITESTREAM_ACCESS_KEY_ID"] = nil
     Litestream.replica_access_key = ENV["LITESTREAM_SECRET_ACCESS_KEY"] = nil
+    Litestream.age_recipient = ENV["LITESTREAM_AGE_RECIPIENT"] = nil
+    Litestream.age_secret_key = ENV["LITESTREAM_AGE_SECRET_KEY"] = nil
     Litestream.config_path = nil
   end
 
@@ -130,10 +132,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_replicate_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run_replicate, nil do
+        Litestream::Commands.replicate
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_replicate_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run_replicate, nil do
+        Litestream::Commands.replicate
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_replicate_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
@@ -142,16 +174,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_replicate_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run_replicate, nil do
         Litestream::Commands.replicate
@@ -160,6 +198,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
   end
 
@@ -263,10 +303,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_restore_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.restore("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_restore_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.restore("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_restore_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -275,16 +345,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_restore_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.restore("db/test.sqlite3")
@@ -293,6 +369,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
   end
 
@@ -392,10 +470,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_databases_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.databases
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_databases_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.databases
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_databases_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -404,16 +512,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_databases_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.databases
@@ -422,6 +536,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_databases_read_from_custom_configured_litestream_config_path
@@ -541,10 +657,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_generations_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.generations("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_generations_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.generations("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_generations_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -553,16 +699,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_generations_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.generations("db/test.sqlite3")
@@ -571,6 +723,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
   end
 
@@ -674,10 +828,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_snapshots_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_snapshots_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.snapshots("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_snapshots_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -686,16 +870,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_snapshots_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.snapshots("db/test.sqlite3")
@@ -704,6 +894,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
   end
 
@@ -807,10 +999,40 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
     end
 
+    def test_wal_sets_age_recipient_env_var_from_config_when_env_var_not_set
+      Litestream.age_recipient = "age1recipient"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.wal("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_nil ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
+    def test_wal_sets_age_secret_key_env_var_from_config_when_env_var_not_set
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
+
+      Litestream::Commands.stub :run, nil do
+        Litestream::Commands.wal("db/test.sqlite3")
+      end
+
+      assert_nil ENV["LITESTREAM_REPLICA_BUCKET"]
+      assert_nil ENV["LITESTREAM_ACCESS_KEY_ID"]
+      assert_nil ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_nil ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
+    end
+
     def test_wal_sets_all_env_vars_from_config_when_env_vars_not_set
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.wal("db/test.sqlite3")
@@ -819,16 +1041,22 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "mybkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "mykey", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "age1recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "AGE-SECRET-KEY-1SECRET", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
 
     def test_wal_does_not_set_env_var_from_config_when_env_vars_already_set
       ENV["LITESTREAM_REPLICA_BUCKET"] = "original_bkt"
       ENV["LITESTREAM_ACCESS_KEY_ID"] = "original_key"
       ENV["LITESTREAM_SECRET_ACCESS_KEY"] = "original_access"
+      ENV["LITESTREAM_AGE_RECIPIENT"] = "original_age_recipient"
+      ENV["LITESTREAM_AGE_SECRET_KEY"] = "original_age_secret"
 
       Litestream.replica_bucket = "mybkt"
       Litestream.replica_key_id = "mykey"
       Litestream.replica_access_key = "access"
+      Litestream.age_recipient = "age1recipient"
+      Litestream.age_secret_key = "AGE-SECRET-KEY-1SECRET"
 
       Litestream::Commands.stub :run, nil do
         Litestream::Commands.wal("db/test.sqlite3")
@@ -837,6 +1065,8 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "original_bkt", ENV["LITESTREAM_REPLICA_BUCKET"]
       assert_equal "original_key", ENV["LITESTREAM_ACCESS_KEY_ID"]
       assert_equal "original_access", ENV["LITESTREAM_SECRET_ACCESS_KEY"]
+      assert_equal "original_age_recipient", ENV["LITESTREAM_AGE_RECIPIENT"]
+      assert_equal "original_age_secret", ENV["LITESTREAM_AGE_SECRET_KEY"]
     end
   end
 

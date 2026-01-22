@@ -9,6 +9,15 @@
 # `replicate` command.
 #
 # For more details, see: https://litestream.io/reference/config/
+
+# Uncomment to enable age encryption for all databases
+# See https://litestream.io/reference/config/#age-encryption
+# age:
+#   recipients:
+#     - $LITESTREAM_AGE_RECIPIENT
+#   identities:
+#     - $LITESTREAM_AGE_SECRET_KEY
+
 dbs:
   <%- production_sqlite_databases.each do |database| -%>
   - path: <%= database %>

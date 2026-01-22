@@ -25,11 +25,19 @@ Rails.application.configure do
   # Replica-specific secret key. Litestream needs authentication credentials to access your storage provider bucket.
   # config.litestream.replica_access_key = litestream_credentials&.replica_access_key
   #
-  # Replica-specific region. Set the bucket’s region. Only used for AWS S3 & Backblaze B2.
+  # Replica-specific region. Set the bucket's region. Only used for AWS S3 & Backblaze B2.
   # config.litestream.replica_region = "us-east-1"
   #
   # Replica-specific endpoint. Set the endpoint URL of the S3-compatible service. Only required for non-AWS services.
   # config.litestream.replica_endpoint = "endpoint.your-objectstorage.com"
+  #
+  # Age encryption recipient public key. Used to encrypt the database backup.
+  # Uncomment the age: section in config/litestream.yml to enable age encryption.
+  # See https://litestream.io/reference/config/#age-encryption for more details.
+  # config.litestream.age_recipient = litestream_credentials&.age_recipient
+  #
+  # Age encryption secret key (identity). Used to decrypt the database backup during restore.
+  # config.litestream.age_secret_key = litestream_credentials&.age_secret_key
 
   # Configure the default Litestream config path
   # config.config_path = Rails.root.join("config", "litestream.yml")

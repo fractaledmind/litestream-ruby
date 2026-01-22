@@ -27,13 +27,13 @@ module Litestream
   end
 
   class Configuration
-    attr_accessor :replica_bucket, :replica_key_id, :replica_access_key
+    attr_accessor :replica_bucket, :replica_key_id, :replica_access_key, :age_recipient, :age_secret_key
 
     def initialize
     end
   end
 
-  mattr_writer :username, :password, :queue, :replica_bucket, :replica_region, :replica_endpoint, :replica_key_id, :replica_access_key, :systemctl_command, :config_path
+  mattr_writer :username, :password, :queue, :replica_bucket, :replica_region, :replica_endpoint, :replica_key_id, :replica_access_key, :age_recipient, :age_secret_key, :systemctl_command, :config_path
   mattr_accessor :base_controller_class, default: "::ApplicationController"
 
   class << self
@@ -92,6 +92,14 @@ module Litestream
 
     def replica_access_key
       @@replica_access_key || configuration.replica_access_key
+    end
+
+    def age_recipient
+      @@age_recipient || configuration.age_recipient
+    end
+
+    def age_secret_key
+      @@age_secret_key || configuration.age_secret_key
     end
 
     def systemctl_command

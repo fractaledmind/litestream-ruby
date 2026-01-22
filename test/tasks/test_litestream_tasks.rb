@@ -30,6 +30,8 @@ class TestLitestreamTasks < ActiveSupport::TestCase
         LITESTREAM_REPLICA_ENDPOINT=
         LITESTREAM_ACCESS_KEY_ID=
         LITESTREAM_SECRET_ACCESS_KEY=
+        LITESTREAM_AGE_RECIPIENT=
+        LITESTREAM_AGE_SECRET_KEY=
       TXT
     end
   end
