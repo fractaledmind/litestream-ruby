@@ -37,8 +37,10 @@ module Litestream
   mattr_accessor :base_controller_class, default: "::ApplicationController"
 
   class << self
-    def verify!(database_path, replication_sleep: 10)
+    def verify!(database_path, replication_sleep: 10, busy_timeout: 5000)
       database = SQLite3::Database.new(database_path)
+      # Apply the busy_timeout to handle concurrent write locks gracefully
+      database.busy_timeout = busy_timeout
       database.execute("CREATE TABLE IF NOT EXISTS _litestream_verification (id INTEGER PRIMARY KEY, uuid BLOB)")
       sentinel = SecureRandom.uuid
       database.execute("INSERT INTO _litestream_verification (uuid) VALUES (?)", [sentinel])
@@ -49,6 +51,7 @@ module Litestream
       Litestream::Commands.restore(database_path, **{"-o" => backup_path})
 
       backup = SQLite3::Database.new(backup_path)
+      backup.busy_timeout = busy_timeout
       result = backup.execute("SELECT 1 FROM _litestream_verification WHERE uuid = ? LIMIT 1", sentinel) # => [[1]] || []
 
       raise VerificationFailure, "Verification failed for `#{database_path}`" if result.empty?
