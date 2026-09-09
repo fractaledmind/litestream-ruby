@@ -9,6 +9,8 @@ class TestLitestreamTasks < ActiveSupport::TestCase
     Rake::Task["litestream:replicate"].reenable
     Rake::Task["litestream:restore"].reenable
     Rake::Task["litestream:databases"].reenable
+    Rake::Task["litestream:ltx"].reenable
+    Rake::Task["litestream:status"].reenable
     Rake::Task["litestream:generations"].reenable
     Rake::Task["litestream:snapshots"].reenable
     Rake::Task["litestream:wal"].reenable
@@ -138,129 +140,102 @@ class TestLitestreamTasks < ActiveSupport::TestCase
     end
   end
 
-  class TestGenerationsTask < TestLitestreamTasks
-    def test_generations_task_with_only_database_using_single_dash
+  class TestLtxTask < TestLitestreamTasks
+    def test_ltx_task_with_only_database_using_single_dash
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :generations, fake do
-        Rake.application.invoke_task "litestream:generations"
+      Litestream::Commands.stub :ltx, fake do
+        Rake.application.invoke_task "litestream:ltx"
       end
       fake.verify
     end
 
-    def test_generations_task_with_only_database_using_double_dash
+    def test_ltx_task_with_only_database_using_double_dash
       ARGV.replace ["--", "--database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :generations, fake do
-        Rake.application.invoke_task "litestream:generations"
+      Litestream::Commands.stub :ltx, fake do
+        Rake.application.invoke_task "litestream:ltx"
       end
       fake.verify
     end
 
-    def test_generations_task_with_arguments
-      ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
+    def test_ltx_task_with_arguments
+      ARGV.replace ["--", "-database=db/test.sqlite3", "--level=all"]
       fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"], "--if-db-not-exists": nil
-      Litestream::Commands.stub :generations, fake do
-        Rake.application.invoke_task "litestream:generations"
+      fake.expect :call, nil, ["db/test.sqlite3"], "--level": "all"
+      Litestream::Commands.stub :ltx, fake do
+        Rake.application.invoke_task "litestream:ltx"
       end
       fake.verify
     end
 
-    def test_generations_task_with_arguments_without_separator
+    def test_ltx_task_with_arguments_without_separator
       ARGV.replace ["-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       fake.expect :call, nil, [nil]
-      Litestream::Commands.stub :generations, fake do
-        Rake.application.invoke_task "litestream:generations"
+      Litestream::Commands.stub :ltx, fake do
+        Rake.application.invoke_task "litestream:ltx"
       end
       fake.verify
     end
   end
 
-  class TestSnapshotsTask < TestLitestreamTasks
-    def test_snapshots_task_with_only_database_using_single_dash
+  class TestStatusTask < TestLitestreamTasks
+    def test_status_task_with_database
       ARGV.replace ["--", "-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
       fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :snapshots, fake do
-        Rake.application.invoke_task "litestream:snapshots"
+      Litestream::Commands.stub :status, fake do
+        Rake.application.invoke_task "litestream:status"
       end
       fake.verify
     end
 
-    def test_snapshots_task_with_only_database_using_double_dash
-      ARGV.replace ["--", "--database=db/test.sqlite3"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :snapshots, fake do
-        Rake.application.invoke_task "litestream:snapshots"
-      end
-      fake.verify
-    end
-
-    def test_snapshots_task_with_arguments
-      ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"], "--if-db-not-exists": nil
-      Litestream::Commands.stub :snapshots, fake do
-        Rake.application.invoke_task "litestream:snapshots"
-      end
-      fake.verify
-    end
-
-    def test_snapshots_task_with_arguments_without_separator
-      ARGV.replace ["-database=db/test.sqlite3"]
+    def test_status_task_without_database
+      ARGV.replace ["--"]
       fake = Minitest::Mock.new
       fake.expect :call, nil, [nil]
-      Litestream::Commands.stub :snapshots, fake do
-        Rake.application.invoke_task "litestream:snapshots"
+      Litestream::Commands.stub :status, fake do
+        Rake.application.invoke_task "litestream:status"
+      end
+      fake.verify
+    end
+
+    def test_status_task_with_arguments
+      ARGV.replace ["--", "--database=db/test.sqlite3", "--json"]
+      fake = Minitest::Mock.new
+      fake.expect :call, nil, ["db/test.sqlite3"], "--json": nil
+      Litestream::Commands.stub :status, fake do
+        Rake.application.invoke_task "litestream:status"
+      end
+      fake.verify
+    end
+
+    def test_status_task_with_arguments_without_separator
+      ARGV.replace ["--json"]
+      fake = Minitest::Mock.new
+      fake.expect :call, nil, [nil]
+      Litestream::Commands.stub :status, fake do
+        Rake.application.invoke_task "litestream:status"
       end
       fake.verify
     end
   end
 
-  class TestWalTask < TestLitestreamTasks
-    def test_wal_task_with_only_database_using_single_dash
-      ARGV.replace ["--", "-database=db/test.sqlite3"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :wal, fake do
-        Rake.application.invoke_task "litestream:wal"
-      end
-      fake.verify
-    end
+  class TestRemovedTasks < TestLitestreamTasks
+    %w[generations snapshots wal].each do |command|
+      define_method(:"test_#{command}_task_aborts_with_migration_message") do
+        _out, err = capture_io do
+          error = assert_raises(SystemExit) do
+            Rake.application.invoke_task "litestream:#{command}"
+          end
+          assert_equal 1, error.status
+        end
 
-    def test_wal_task_with_only_database_using_double_dash
-      ARGV.replace ["--", "--database=db/test.sqlite3"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"]
-      Litestream::Commands.stub :wal, fake do
-        Rake.application.invoke_task "litestream:wal"
+        assert_equal "`#{command}` was removed in Litestream 0.5; use `ltx` (see README, Upgrading from 0.3)\n", err
       end
-      fake.verify
-    end
-
-    def test_wal_task_with_arguments
-      ARGV.replace ["--", "-database=db/test.sqlite3", "--if-db-not-exists"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, ["db/test.sqlite3"], "--if-db-not-exists": nil
-      Litestream::Commands.stub :wal, fake do
-        Rake.application.invoke_task "litestream:wal"
-      end
-      fake.verify
-    end
-
-    def test_wal_task_with_arguments_without_separator
-      ARGV.replace ["-database=db/test.sqlite3"]
-      fake = Minitest::Mock.new
-      fake.expect :call, nil, [nil]
-      Litestream::Commands.stub :wal, fake do
-        Rake.application.invoke_task "litestream:wal"
-      end
-      fake.verify
     end
   end
 end

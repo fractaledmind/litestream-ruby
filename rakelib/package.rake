@@ -58,12 +58,13 @@
 require "rubygems/package"
 require "rubygems/package_task"
 require "open-uri"
+require "digest"
+require "stringio"
 require "zlib"
-require "zip"
 require_relative "../lib/litestream/upstream"
 
 def litestream_download_url(filename)
-  "https://github.com/benbjohnson/litestream/releases/download/#{Litestream::Upstream::VERSION}/#{filename}"
+  Litestream::Upstream.download_url(filename)
 end
 
 LITESTREAM_RAILS_GEMSPEC = Bundler.load_gemspec("litestream.gemspec")
@@ -77,11 +78,13 @@ Litestream::Upstream::NATIVE_PLATFORMS.each do |platform, filename|
   LITESTREAM_RAILS_GEMSPEC.dup.tap do |gemspec|
     exedir = File.join(gemspec.bindir, platform) # "exe/x86_64-linux"
     exepath = File.join(exedir, "litestream") # "exe/x86_64-linux/litestream"
+    checksum_path = "#{exepath}.sha256"
+    expected_checksum = Litestream::Upstream::CHECKSUMS.fetch(filename)
     exepaths << exepath
 
     # modify a copy of the gemspec to include the native executable
     gemspec.platform = platform
-    gemspec.files += [exepath, "LICENSE-DEPENDENCIES"]
+    gemspec.files += [exepath, checksum_path, "LICENSE-DEPENDENCIES"]
 
     # create a package task
     gem_path = Gem::PackageTask.new(gemspec).define
@@ -89,28 +92,35 @@ Litestream::Upstream::NATIVE_PLATFORMS.each do |platform, filename|
     task "gem:#{platform}" => [gem_path]
 
     directory exedir
-    file exepath => [exedir] do
+    validation_task = "validate-litestream-#{platform}"
+    task validation_task do
+      checksum_matches = File.exist?(checksum_path) && File.read(checksum_path).strip == expected_checksum
+      FileUtils.rm_f([exepath, checksum_path]) unless checksum_matches
+    end
+
+    file exepath => [exedir, validation_task] do
       release_url = litestream_download_url(filename)
       warn "Downloading #{exepath} from #{release_url} ..."
 
-      # lazy, but fine for now.
       URI.open(release_url) do |remote| # standard:disable Security/Open
-        if release_url.end_with?(".zip")
-          Zip::File.open_buffer(remote) do |zip_file|
-            zip_file.extract("litestream", exepath)
-          end
-        elsif release_url.end_with?(".gz")
-          Zlib::GzipReader.wrap(remote) do |gz|
-            Gem::Package::TarReader.new(gz) do |reader|
-              reader.seek("litestream") do |file|
-                File.binwrite(exepath, file.read)
-              end
+        archive = remote.read
+        actual_checksum = Digest::SHA256.hexdigest(archive)
+        unless actual_checksum == expected_checksum
+          raise "Checksum mismatch for #{filename}: expected #{expected_checksum}, got #{actual_checksum}"
+        end
+
+        Zlib::GzipReader.wrap(StringIO.new(archive)) do |gz|
+          Gem::Package::TarReader.new(gz) do |reader|
+            reader.seek("litestream") do |file|
+              File.binwrite(exepath, file.read)
             end
           end
         end
       end
       FileUtils.chmod(0o755, exepath, verbose: true)
+      File.write(checksum_path, "#{expected_checksum}\n")
     end
+    file checksum_path => [exepath]
   end
 end
 
