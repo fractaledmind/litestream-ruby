@@ -1,3 +1,5 @@
+require "json"
+require "open3"
 require_relative "upstream"
 
 module Litestream
@@ -19,6 +21,9 @@ module Litestream
 
     # raised when a litestream command fails
     CommandFailedException = Class.new(StandardError)
+
+    # raised when a litestream command times out
+    CommandTimeoutException = Class.new(CommandFailedException)
 
     module Output
       class << self
@@ -47,7 +52,10 @@ module Litestream
         litestream_install_dir = ENV["LITESTREAM_INSTALL_DIR"]
         if litestream_install_dir
           if File.directory?(litestream_install_dir)
-            warn "NOTE: using LITESTREAM_INSTALL_DIR to find litestream executable: #{litestream_install_dir}"
+            unless @litestream_install_dir_noted
+              warn "NOTE: using LITESTREAM_INSTALL_DIR to find litestream executable: #{litestream_install_dir}"
+              @litestream_install_dir_noted = true
+            end
             exe_path = litestream_install_dir
             exe_file = File.expand_path(File.join(litestream_install_dir, "litestream"))
           else
@@ -135,14 +143,19 @@ module Litestream
       private
 
       def execute(command, argv = {}, database = nil, tabled_output: true)
-        cmd = prepare(command, argv, database)
-        results = run(cmd, tabled_output: tabled_output)
-
-        if Array === results && results.one? && results[0]["level"] == "ERROR"
-          raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`; Reason: #{results[0]["error"]}"
+        argv = argv.stringify_keys
+        timeout = argv.delete("timeout")
+        output = if argv.delete("json")
+          argv["-json"] = nil
+          :json
+        elsif tabled_output
+          :table
         else
-          results
+          :raw
         end
+
+        cmd = prepare(command, argv, database)
+        run(cmd, output: output, timeout: timeout)
       end
 
       def prepare(command, argv = {}, database = nil)
@@ -154,18 +167,71 @@ module Litestream
 
         args = {
           "--config" => Litestream.config_path.to_s
-        }.merge(argv.stringify_keys).to_a.flatten.compact
-        cmd = [executable, command, *args, database].compact
+        }.merge(argv.stringify_keys).to_a.flatten.compact.map(&:to_s)
+        cmd = [executable, command, *args, database].compact.map(&:to_s)
         puts cmd.inspect if ENV["DEBUG"]
 
         cmd
       end
 
-      def run(cmd, tabled_output:)
-        stdout = `#{cmd.join(" ")}`.chomp
-        return stdout unless tabled_output
+      # Runs the command without a shell and returns its parsed stdout. A non-zero
+      # exit raises with stderr. With a timeout, the command runs in its own
+      # process group and is killed (TERM, then KILL) when the deadline passes.
+      def run(cmd, output:, timeout: nil)
+        stdin, stdout, stderr, wait_thread = Open3.popen3(*cmd, pgroup: true)
+        stdin.close
+        stdout_reader = Thread.new { stdout.read }
+        stderr_reader = Thread.new { stderr.read }
 
-        keys, *rows = stdout.split("\n").map { _1.split(/\s+/) }
+        # The readers finish when the last process holding the pipes exits, so
+        # waiting on them covers descendants the direct child may have left behind.
+        unless wait_thread.join(timeout) && stdout_reader.join(timeout) && stderr_reader.join(timeout)
+          kill_process_group("TERM", wait_thread.pid)
+          wait_thread.join(1)
+          kill_process_group("KILL", wait_thread.pid)
+          wait_thread.join
+          [stdout_reader, stderr_reader].each(&:join)
+          raise CommandTimeoutException, "Failed to execute `#{cmd[1]}`: timed out after #{timeout} seconds"
+        end
+
+        status = wait_thread.value
+        unless status.success?
+          raise CommandFailedException, "Failed to execute `#{cmd[1]}` (exit status #{status.exitstatus}): #{stderr_reader.value.strip[0, 500]}"
+        end
+
+        case output
+        when :json then parse_json(cmd, stdout_reader.value)
+        when :table then parse_table(stdout_reader.value)
+        else stdout_reader.value
+        end
+      ensure
+        [stdout_reader, stderr_reader].each { |reader| reader&.join }
+        [stdin, stdout, stderr].each { |io| io&.close unless io&.closed? }
+      end
+
+      def kill_process_group(signal, pid)
+        Process.kill(signal, -pid)
+      rescue Errno::ESRCH
+      end
+
+      # Two opt-in restore skips (-if-db-not-exists when the output exists,
+      # -if-replica-exists with no backups) exit 0 and print one logfmt line on
+      # stdout instead of JSON. They come back as {"skipped" => true, "message" => ...}.
+      def parse_json(cmd, stdout)
+        stdout = stdout.strip
+        return if stdout.empty?
+        return JSON.parse(stdout) if stdout.start_with?("{", "[")
+
+        skipped = stdout.match(/\Atime=\S+ level=\S+ msg=(?:"([^"]*)"|(\S+))/)
+        return {"skipped" => true, "message" => skipped[1] || skipped[2]} if skipped
+
+        raise CommandFailedException, "Unexpected output from `#{cmd[1]}`: #{stdout.lines.first.to_s.strip[0, 200]}"
+      end
+
+      def parse_table(stdout)
+        keys, *rows = stdout.strip.split("\n").map { _1.split(/\s+/) }
+        return [] unless keys
+
         rows.map { keys.zip(_1).to_h }
       end
 
