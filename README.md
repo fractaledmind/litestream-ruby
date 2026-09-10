@@ -434,6 +434,8 @@ s3       a295b16a796689f3  1      0         2036     2024-04-17T00:01:19Z
 
 In addition to the provided rake tasks, you can also run Litestream commands directly from Ruby. The gem provides a `Litestream::Commands` module that wraps the Litestream CLI commands. This is particularly useful for the introspection commands, as you can use the output in your Ruby code.
 
+Commands raise `Litestream::Commands::CommandFailedException` when the Litestream binary exits non-zero, and the exception message includes stderr. Pass `json: true` to receive parsed JSON when using Litestream 0.5 or newer (Litestream 0.3 does not support the `-json` flag), and use `timeout:` to limit how many seconds a command may run.
+
 The `Litestream::Commands.databases` method returns an array of hashes with the "path" and "replicas" keys for each database:
 
 ```ruby
