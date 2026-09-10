@@ -107,20 +107,18 @@ module Litestream
     end
 
     def databases
-      databases = Commands.databases
+      databases = Commands.databases(json: true)
 
       databases.each do |db|
-        generations = Commands.generations(db["path"])
-        snapshots = Commands.snapshots(db["path"])
-        db["path"] = db["path"].gsub(Rails.root.to_s, "[ROOT]")
-
-        db["generations"] = generations.map do |generation|
-          id = generation["generation"]
-          replica = generation["name"]
-          generation["snapshots"] = snapshots.select { |snapshot| snapshot["generation"] == id && snapshot["replica"] == replica }
-            .map { |s| s.slice("index", "size", "created") }
-          generation.slice("generation", "name", "lag", "start", "end", "snapshots")
+        path = db["path"]
+        begin
+          db["status"] = Commands.status(path, json: true).first
+          db["ltx"] = Commands.ltx(path, :json => true, "--level" => "all")
+        rescue Commands::CommandFailedException => error
+          db["error"] = error.message
         end
+
+        db["path"] = path.gsub(Rails.root.to_s, "[ROOT]")
       end
     end
 

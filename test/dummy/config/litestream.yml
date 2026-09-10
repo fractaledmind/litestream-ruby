@@ -9,12 +9,17 @@
 # `replicate` command.
 #
 # For more details, see: https://litestream.io/reference/config/
+# Retention and snapshot settings are global in Litestream 0.5.
+snapshot:
+  interval: 24h
+  retention: 24h
+
 dbs:
   - path: storage/test.sqlite3
-    replicas:
-      - type: s3
-        bucket: $LITESTREAM_REPLICA_BUCKET
-        path: test
-        endpoint: http://localhost:9000
-        access-key-id: $LITESTREAM_ACCESS_KEY_ID
-        secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
+    replica:
+      type: s3
+      bucket: $LITESTREAM_REPLICA_BUCKET
+      path: test
+      endpoint: http://localhost:9000
+      access-key-id: $LITESTREAM_ACCESS_KEY_ID
+      secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY

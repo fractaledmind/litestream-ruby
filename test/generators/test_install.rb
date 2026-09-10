@@ -22,6 +22,10 @@ class LitestreamGeneratorTest < Rails::Generators::TestCase
       assert_match "- path: storage/test.sqlite3", content
       assert_match "- path: storage/queue.sqlite3", content
       assert_match "- path: storage/errors.sqlite3", content
+      assert_match "snapshot:", content
+      assert_match "interval: 24h", content
+      assert_match "retention: 24h", content
+      assert_match "replica:", content
       assert_match "bucket: $LITESTREAM_REPLICA_BUCKET", content
       assert_match "access-key-id: $LITESTREAM_ACCESS_KEY_ID", content
       assert_match "secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY", content

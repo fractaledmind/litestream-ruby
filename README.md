@@ -85,15 +85,21 @@ The gem streamlines the configuration process by providing a default configurati
 The default configuration file looks like this if you only have one SQLite database:
 
 ```yaml
+snapshot:
+  interval: 24h
+  retention: 24h
+
 dbs:
   - path: storage/production.sqlite3
-    replicas:
-      - type: s3
-        path: storage/production.sqlite3
-        bucket: $LITESTREAM_REPLICA_BUCKET
-        access-key-id: $LITESTREAM_ACCESS_KEY_ID
-        secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
+    replica:
+      type: s3
+      path: storage/production.sqlite3
+      bucket: $LITESTREAM_REPLICA_BUCKET
+      access-key-id: $LITESTREAM_ACCESS_KEY_ID
+      secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
 ```
+
+In Litestream 0.5, snapshot interval and retention are global settings rather than per-replica settings.
 
 This is the default for Amazon S3. The full range of possible replica types (e.g. other S3-compatible object storage servers) are covered in Litestream's [replica guides](https://litestream.io/guides/#replica-guides).
 
@@ -179,7 +185,7 @@ You can restore any replicated database at any point using the gem's provided `l
 > [!NOTE]  
 > During the restoration process, you need to prevent any interaction with ActiveRecord/SQLite, such as from a running `rails server` or `rails console` instance. If there is any interaction, Rails might regenerate the production database and prevent restoration via litestream. If this happens, you might get a "cannot restore, output path already exists" error.
 
-1. Rename the production (`production.sqlite3`, `production.sqlite3-shm`, and `production.sqlite3-wal`) databases (**recommended**) or alternatively delete. To delete the production databases locally, you can run the following at your own risk:
+1. Rename the production database and its SQLite sidecar files (**recommended**) or alternatively delete them. To delete the production databases locally, you can run the following at your own risk:
    ```shell
    # DANGEROUS OPERATION, consider renaming database files instead
    bin/rails db:drop DISABLE_DATABASE_ENVIRONMENT_CHECK=1
@@ -215,25 +221,18 @@ You can forward arguments in whatever order you like, you simply need to ensure 
 -if-replica-exists
     Returns exit code of 0 if no backups found.
 
--parallelism NUM
-    Determines the number of WAL files downloaded in parallel.
-    Defaults to 8
-
--replica NAME
-    Restore from a specific replica.
-    Defaults to replica with latest data.
-
--generation NAME
-    Restore from a specific generation.
-    Defaults to generation with latest data.
-
--index NUM
-    Restore up to a specific WAL index (inclusive).
-    Defaults to use the highest available index.
+-txid TXID
+    Restore through a specific 16-character hexadecimal transaction ID.
 
 -timestamp TIMESTAMP
     Restore to a specific point-in-time.
     Defaults to use the latest available backup.
+
+-json
+    Print the restore result as JSON.
+
+-dry-run
+    Print the restore plan without writing the database.
 
 -config PATH
     Specifies the configuration file.
@@ -387,79 +386,59 @@ bin/rails litestream:databases
 This will return a list of databases and their configured replicas:
 
 ```
-path                                                 replicas
+path                                                 replica
 /Users/you/Code/your-app/storage/production.sqlite3  s3
 ```
 
-You can also list the generations of a specific database:
+You can inspect local replication status for all databases or one specific database:
 
 ```shell
-bin/rails litestream:generations -- --database=storage/production.sqlite3
+bin/rails litestream:status -- --database=storage/production.sqlite3
 ```
 
-This will list all generations for the specified database, including stats about their lag behind the primary database and the time range they cover:
+This reads local state and does not require a running Litestream process:
 
 ```
-name  generation        lag     start                 end
-s3    a295b16a796689f3  -156ms  2024-04-17T00:01:19Z  2024-04-17T00:01:19Z
+database                                            status  local_txid        wal_size
+/Users/you/Code/your-app/storage/production.sqlite3 ok      000000000000000a  128 kB
 ```
 
-You can list the snapshots available for a database:
+You can list all remote LTX files, including the level-9 snapshot:
 
 ```shell
-bin/rails litestream:snapshots -- --database=storage/production.sqlite3
+bin/rails litestream:ltx -- --database=storage/production.sqlite3 --level=all
 ```
 
-This command lists snapshots available for that specified database:
+The command returns the compaction level, transaction range, byte size, and creation time:
 
 ```
-replica  generation        index  size     created
-s3       a295b16a796689f3  1      4645465  2024-04-17T00:01:19Z
-```
-
-Finally, you can list the wal files available for a database:
-
-```shell
-bin/rails litestream:wal -- --database=storage/production.sqlite3
-```
-
-This command lists wal files available for that specified database:
-
-```
-replica  generation        index  offset    size     created
-s3       a295b16a796689f3  1      0         2036     2024-04-17T00:01:19Z
+level  min_txid          max_txid          size  created
+0      0000000000000008  000000000000000a  1013  2026-09-08T03:16:43Z
 ```
 
 ### Running commands from Ruby
 
 In addition to the provided rake tasks, you can also run Litestream commands directly from Ruby. The gem provides a `Litestream::Commands` module that wraps the Litestream CLI commands. This is particularly useful for the introspection commands, as you can use the output in your Ruby code.
 
-The `Litestream::Commands.databases` method returns an array of hashes with the "path" and "replicas" keys for each database:
+Pass `json: true` to return the 0.5 CLI's JSON values with string keys. The `Litestream::Commands.databases` method returns each database path and replica type:
 
 ```ruby
-Litestream::Commands.databases
-# => [{"path"=>"/Users/you/Code/your-app/storage/production.sqlite3", "replicas"=>"s3"}]
+Litestream::Commands.databases(json: true)
+# => [{"path"=>"/Users/you/Code/your-app/storage/production.sqlite3", "replica"=>"s3"}]
 ```
 
-The `Litestream::Commands.generations` method returns an array of hashes with the "name", "generation", "lag", "start", and "end" keys for each generation:
+The `status` method returns local state without connecting to the replica or requiring a daemon:
 
 ```ruby
-Litestream::Commands.generations('storage/production.sqlite3')
-# => [{"name"=>"s3", "generation"=>"5f4341bc3d22d615", "lag"=>"3s", "start"=>"2024-04-17T19:48:09Z", "end"=>"2024-04-17T19:48:09Z"}]
+Litestream::Commands.status("storage/production.sqlite3", json: true)
+# => [{"database"=>"storage/production.sqlite3", "status"=>"ok", "local_txid"=>"000000000000000a", "wal_size"=>"128 kB"}]
 ```
 
-The `Litestream::Commands.snapshots` method returns an array of hashes with the "replica", "generation", "index", "size", and "created" keys for each snapshot:
+The `ltx` method lists remote LTX files. An unreplicated database returns an empty array:
 
 ```ruby
-Litestream::Commands.snapshots('storage/production.sqlite3')
-# => [{"replica"=>"s3", "generation"=>"5f4341bc3d22d615", "index"=>"0", "size"=>"4645465", "created"=>"2024-04-17T19:48:09Z"}]
-```
-
-The `Litestream::Commands.wal` method returns an array of hashes with the "replica", "generation", "index", "offset","size", and "created" keys for each wal:
-
-```ruby
-Litestream::Commands.wal('storage/production.sqlite3')
-# => [{"replica"=>"s3", "generation"=>"5f4341bc3d22d615", "index"=>"0",  "offset"=>"0", "size"=>"2036", "created"=>"2024-04-17T19:48:09Z"}]
+Litestream::Commands.ltx("storage/production.sqlite3", json: true, "--level" => "all")
+# => [{"level"=>0, "min_txid"=>"0000000000000008", "max_txid"=>"000000000000000a", "size"=>1013, "timestamp"=>"2026-09-08T03:16:43Z"}]
 ```
 
 You can also restore a database programmatically using the `Litestream::Commands.restore` method, which returns the path to the restored database:
@@ -479,13 +458,28 @@ The full set of commands available to the `litestream` executable are covered in
 
 ```shell
 litestream databases [arguments]
-litestream generations [arguments] DB_PATH|REPLICA_URL
+litestream info [arguments]
+litestream list [arguments]
+litestream ltx [arguments] DB_PATH
+litestream register [arguments]
 litestream replicate [arguments]
-litestream restore [arguments] DB_PATH|REPLICA_URL
-litestream snapshots [arguments] DB_PATH|REPLICA_URL
+litestream reset [arguments]
+litestream restore [arguments] DB_PATH
+litestream start [arguments]
+litestream status [arguments] [DB_PATH]
+litestream stop [arguments]
+litestream sync [arguments]
+litestream unregister [arguments]
 litestream version
-litestream wal [arguments] DB_PATH|REPLICA_URL
 ```
+
+### Upgrading from 0.3
+
+Litestream 0.5 changes each database from a `replicas:` list to a single `replica:` map and moves retention and snapshot settings into the root-level `snapshot:` block. Existing `replicas:` configuration files must be edited by hand before upgrading. The `databases` command and Ruby method now return a `"replica"` key instead of `"replicas"`.
+
+The removed `generations`, `snapshots`, and `wal` command methods and rake tasks now raise an error pointing to `ltx`, which replaces all three forms of remote backup introspection.
+
+The 0.5 `restore` command auto-detects both 0.3 and LTX backups and prefers whichever backup is newer. Existing 0.3 `generations/` objects are left in place; you can delete them after the LTX history covers your full retention window. To roll back, reinstall a 0.14.x release of this gem, which bundles Litestream 0.3.
 
 ### Using in development
 

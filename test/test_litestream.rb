@@ -85,4 +85,55 @@ class TestLitestream < Minitest::Test
       assert_equal info[:started].class, DateTime
     end
   end
+
+  def test_databases_loads_status_and_ltx_and_isolates_command_failures
+    database_path = Rails.root.join("storage/test.sqlite3").to_s
+    failing_path = Rails.root.join("storage/failing.sqlite3").to_s
+    databases = [
+      {"path" => database_path, "replica" => "file"},
+      {"path" => failing_path, "replica" => "file"}
+    ]
+    status = [{"database" => database_path, "status" => "ok", "local_txid" => "000000000000000a", "wal_size" => 131_072}]
+    ltx = [{"level" => 0, "min_txid" => "0000000000000008", "max_txid" => "000000000000000a", "size" => 1013, "timestamp" => "2026-09-08T03:16:43Z"}]
+    databases_stub = proc do |**options|
+      assert_equal({json: true}, options)
+      databases.map(&:dup)
+    end
+    status_stub = proc do |path, **options|
+      assert_equal({json: true}, options)
+      raise Litestream::Commands::CommandFailedException, "status unavailable" if path == failing_path
+
+      status
+    end
+    ltx_stub = proc do |path, **options|
+      assert_equal database_path, path
+      assert_equal({:json => true, "--level" => "all"}, options)
+      ltx
+    end
+
+    Litestream::Commands.stub :databases, databases_stub do
+      Litestream::Commands.stub :status, status_stub do
+        Litestream::Commands.stub :ltx, ltx_stub do
+          result = Litestream.databases
+
+          assert_equal "[ROOT]/storage/test.sqlite3", result[0]["path"]
+          assert_equal status.first, result[0]["status"]
+          assert_equal ltx, result[0]["ltx"]
+          assert_equal "status unavailable", result[1]["error"]
+          assert_equal "[ROOT]/storage/failing.sqlite3", result[1]["path"]
+        end
+      end
+    end
+  end
+
+  def test_databases_propagates_non_command_errors
+    databases = [{"path" => Rails.root.join("storage/test.sqlite3").to_s, "replica" => "file"}]
+
+    Litestream::Commands.stub :databases, databases do
+      Litestream::Commands.stub :status, proc { raise ArgumentError, "unexpected data" } do
+        error = assert_raises(ArgumentError) { Litestream.databases }
+        assert_equal "unexpected data", error.message
+      end
+    end
+  end
 end
