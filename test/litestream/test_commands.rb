@@ -563,6 +563,10 @@ class TestCommands < ActiveSupport::TestCase
         shift
         while [ "$#" -gt 0 ]; do
           case "$1" in
+            --status-table)
+              printf 'database                       status       local txid        wal size\n/app/storage/production.sqlite3  ok           0000000000000001  231 kB\n/app/storage/other.sqlite3       no database  -                 -\n'
+              exit 0
+              ;;
             --table)
               printf 'path                 replica\n/tmp/app.sqlite3     s3\n'
               exit 0
@@ -628,6 +632,15 @@ class TestCommands < ActiveSupport::TestCase
       Litestream::Commands.remove_instance_variable(:@litestream_install_dir_noted) if Litestream::Commands.instance_variable_defined?(:@litestream_install_dir_noted)
       Litestream.config_path = nil
       FileUtils.remove_entry(@tmpdir)
+    end
+
+    def test_table_columns_with_spaces_in_headers_and_values
+      expected = [
+        {"database" => "/app/storage/production.sqlite3", "status" => "ok", "local txid" => "0000000000000001", "wal size" => "231 kB"},
+        {"database" => "/app/storage/other.sqlite3", "status" => "no database", "local txid" => "-", "wal size" => "-"}
+      ]
+
+      assert_equal expected, run_with_fake { Litestream::Commands.status(nil, "--status-table" => nil) }
     end
 
     def test_successful_table_output

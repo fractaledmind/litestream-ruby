@@ -240,8 +240,10 @@ module Litestream
         raise CommandFailedException, "Unexpected output from `#{cmd[1]}`: #{stdout.lines.first.to_s.strip[0, 200]}"
       end
 
+      # Litestream pads columns with at least two spaces, and some headers and
+      # values hold a single one ("local txid", "231 kB", "no database").
       def parse_table(stdout)
-        keys, *rows = stdout.strip.split("\n").map { _1.split(/\s+/) }
+        keys, *rows = stdout.strip.split("\n").map { _1.strip.split(/\s{2,}/) }
         return [] unless keys
 
         rows.map { keys.zip(_1).to_h }

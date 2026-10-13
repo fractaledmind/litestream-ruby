@@ -399,8 +399,8 @@ bin/rails litestream:status -- --database=storage/production.sqlite3
 This reads local state and does not require a running Litestream process:
 
 ```
-database                                            status  local_txid        wal_size
-/Users/you/Code/your-app/storage/production.sqlite3 ok      000000000000000a  128 kB
+database                                             status  local txid        wal size
+/Users/you/Code/your-app/storage/production.sqlite3  ok      000000000000000a  128 kB
 ```
 
 You can list all remote LTX files, including the level-9 snapshot:
@@ -431,7 +431,7 @@ The `status` method returns local state without connecting to the replica or req
 
 ```ruby
 Litestream::Commands.status("storage/production.sqlite3", json: true)
-# => [{"database"=>"storage/production.sqlite3", "status"=>"ok", "local_txid"=>"000000000000000a", "wal_size"=>"128 kB"}]
+# => [{"database"=>"/Users/you/Code/your-app/storage/production.sqlite3", "status"=>"ok", "local_txid"=>"000000000000000a", "wal_size"=>"128 kB"}]
 ```
 
 The `ltx` method lists remote LTX files. An unreplicated database returns an empty array:
@@ -475,11 +475,11 @@ litestream version
 
 ### Upgrading from 0.3
 
-Litestream 0.5 changes each database from a `replicas:` list to a single `replica:` map and moves retention and snapshot settings into the root-level `snapshot:` block. Existing `replicas:` configuration files must be edited by hand before upgrading. The `databases` command and Ruby method now return a `"replica"` key instead of `"replicas"`.
+Litestream 0.5 replicates each database to a single `replica:` map and moves retention and snapshot settings into the root-level `snapshot:` block. A `replicas:` list with one entry still works. A list with more than one entry stops `litestream replicate` from starting ("multiple replicas on a single database are no longer supported"), and when the Puma plugin sees Litestream exit it stops Puma, so reduce each database to one replica before upgrading. The `databases` command and Ruby method now return a `"replica"` key instead of `"replicas"`.
 
 The removed `generations`, `snapshots`, and `wal` command methods and rake tasks now raise an error pointing to `ltx`, which replaces all three forms of remote backup introspection.
 
-The 0.5 `restore` command auto-detects both 0.3 and LTX backups and prefers whichever backup is newer. Existing 0.3 `generations/` objects are left in place; you can delete them after the LTX history covers your full retention window. To roll back, reinstall a 0.14.x release of this gem, which bundles Litestream 0.3.
+The 0.5 `restore` command auto-detects both 0.3 and LTX backups and prefers whichever backup is newer. Existing 0.3 `generations/` objects are left in place; you can delete them after the LTX history covers your full retention window. To roll back, reinstall a 0.15.x release of this gem, which bundles Litestream 0.3.
 
 ### Using in development
 
