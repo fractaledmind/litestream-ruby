@@ -98,6 +98,38 @@ class TestLitestreamTasks < ActiveSupport::TestCase
       fake.verify
     end
 
+    def test_restore_task_with_an_option_value_after_a_space
+      ARGV.replace ["--", "--database=db/test.sqlite3", "-o", "storage/restored.sqlite3", "-if-db-not-exists"]
+      fake = Minitest::Mock.new
+      fake.expect :call, nil, ["db/test.sqlite3"], "-o": "storage/restored.sqlite3", "-if-db-not-exists": nil
+      Litestream::Commands.stub :restore, fake do
+        Rake.application.invoke_task "litestream:restore"
+      end
+      fake.verify
+    end
+
+    def test_restore_task_keeps_an_equals_sign_inside_an_option_value
+      ARGV.replace ["--", "--database=db/test.sqlite3", "-timestamp=2026-10-13T00:00:00Z", "-o=storage/a=b.sqlite3"]
+      fake = Minitest::Mock.new
+      fake.expect :call, nil, ["db/test.sqlite3"], "-timestamp": "2026-10-13T00:00:00Z", "-o": "storage/a=b.sqlite3"
+      Litestream::Commands.stub :restore, fake do
+        Rake.application.invoke_task "litestream:restore"
+      end
+      fake.verify
+    end
+
+    def test_rake_does_not_abort_on_an_option_value_after_a_space
+      ARGV.replace ["--", "--database=db/test.sqlite3", "-o", "storage/restored.sqlite3"]
+      # what `rake litestream:restore -- --database=... -o storage/restored.sqlite3` queues
+      Rake.application.top_level_tasks.replace ["litestream:restore", "storage/restored.sqlite3"]
+
+      Litestream::Commands.stub :restore, nil do
+        Rake.application.top_level
+      end
+    ensure
+      Rake.application.top_level_tasks.clear
+    end
+
     def test_restore_task_with_arguments_without_separator
       ARGV.replace ["-database=db/test.sqlite3"]
       fake = Minitest::Mock.new
