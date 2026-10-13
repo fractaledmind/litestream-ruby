@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- The Puma plugin stops Puma when Litestream exits, as documented. The monitor was registered from the booted callback, after Puma had already started its background threads, so it never ran (same fix as rails/solid_queue@5d200d0).
+
 ## [0.16.0] - 2026-10-13
 
 Breaking: this release bundles Litestream 0.5, which changes the backup format, the config shape and the CLI. Read "Upgrading from 0.3" in the README before upgrading. Stay on 0.15.x for Litestream 0.3, including age encryption.

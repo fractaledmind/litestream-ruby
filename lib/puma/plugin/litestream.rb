@@ -7,12 +7,12 @@ Puma::Plugin.create do
   def start(launcher)
     @log_writer = launcher.log_writer
 
+    in_background do
+      monitor_litestream
+    end
+
     launcher.events.on_booted do
       @litestream_pid = Litestream::Commands.replicate(async: true)
-
-      in_background do
-        monitor_litestream
-      end
     end
 
     launcher.events.on_stopped { stop_litestream }
@@ -45,7 +45,7 @@ Puma::Plugin.create do
   end
 
   def litestream_dead?
-    Process.waitpid(litestream_pid, Process::WNOHANG)
+    Process.waitpid(litestream_pid, Process::WNOHANG) if litestream_pid
     false
   rescue Errno::ECHILD, Errno::ESRCH
     true
