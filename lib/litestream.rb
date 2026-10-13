@@ -1,9 +1,22 @@
 # frozen_string_literal: true
 
+require "etc"
 require "sqlite3"
+require "time"
 
 module Litestream
   VerificationFailure = Class.new(StandardError)
+
+  PROCESS_STATES = {
+    "D" => "uninterruptible",
+    "I" => "idle",
+    "R" => "running",
+    "S" => "sleeping",
+    "T" => "stopped",
+    "U" => "uninterruptible",
+    "Z" => "zombie"
+  }.freeze
+  private_constant :PROCESS_STATES
 
   class << self
     attr_writer :configuration
@@ -163,30 +176,58 @@ module Litestream
       info
     end
 
+    # Linux has every process under /proc, even in images that ship no `ps`
+    # (Debian slim) or BusyBox's, which lacks `-x` and `lstart` (Alpine).
     def process_info
-      litestream_replicate_ps = `ps -ef | grep litestream | grep replicate`
-      exit_code = $?.exitstatus
-      return unless exit_code.zero?
+      File.directory?("/proc/self") ? proc_process_info : ps_process_info
+    end
 
-      info = {}
-      litestream_replicate_ps.chomp.split("\n").each do |line|
-        next unless line.include?("litestream replicate")
+    def proc_process_info(proc_dir = "/proc")
+      boot_time = File.foreach(File.join(proc_dir, "stat")).grep(/\Abtime /).first.split.last.to_i
 
-        pid, * = line.split(" ")
-        info[:pid] = pid
-        state, _, lstart = `ps -o "state,lstart" #{pid}`.chomp.split("\n").last.partition(/\s+/)
+      Dir.glob(File.join(proc_dir, "[0-9]*")).each do |dir|
+        executable, command = File.read(File.join(dir, "cmdline")).split("\0")
+        next unless File.basename(executable.to_s) == "litestream" && command == "replicate"
 
-        info[:status] = case state[0]
-        when "I" then "idle"
-        when "R" then "running"
-        when "S" then "sleeping"
-        when "T" then "stopped"
-        when "U" then "uninterruptible"
-        when "Z" then "zombie"
-        end
-        info[:started] = DateTime.strptime(lstart.strip, "%a %b %d %H:%M:%S %Y")
+        # Fields are counted after the command name's closing paren, since the
+        # name itself may contain spaces and parens.
+        state, *fields = File.read(File.join(dir, "stat")).rpartition(")").last.split
+        start_ticks = fields[18].to_i
+
+        return {
+          pid: File.basename(dir),
+          status: PROCESS_STATES[state[0]],
+          started: Time.at(boot_time + start_ticks.fdiv(Etc.sysconf(Etc::SC_CLK_TCK))).to_datetime
+        }
+      rescue SystemCallError
+        # the process exited while being read, or belongs to another user
+        next
       end
-      info
+      nil
+    end
+
+    # macOS. The command name is matched on its own so that a shell or editor
+    # whose arguments mention "litestream replicate" is not mistaken for it.
+    def ps_process_info
+      output = `ps -axo pid=,stat=,lstart=,comm=`
+      return unless $?.success?
+
+      output.each_line do |line|
+        # lstart is always five words ("Mon Jul  1 11:10:58 2024"); comm is last
+        # because it may contain spaces.
+        pid, state, *lstart, command = line.strip.split(" ", 8)
+        next unless File.basename(command.to_s) == "litestream"
+        next unless `ps -o args= -p #{pid}`.match?(/litestream replicate(?: |$)/)
+
+        return {
+          pid: pid,
+          status: PROCESS_STATES[state[0]],
+          started: Time.strptime(lstart.join(" "), "%a %b %d %H:%M:%S %Y").to_datetime
+        }
+      end
+      nil
+    rescue Errno::ENOENT
+      nil
     end
   end
 end
