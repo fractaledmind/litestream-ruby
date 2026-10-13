@@ -211,9 +211,11 @@ module Litestream
         [stdin, stdout, stderr].each { |io| io&.close unless io&.closed? }
       end
 
+      # macOS answers EPERM rather than ESRCH when every process left in the
+      # group has exited but not yet been reaped.
       def kill_process_group(signal, pid)
         Process.kill(signal, -pid)
-      rescue Errno::ESRCH
+      rescue Errno::ESRCH, Errno::EPERM
       end
 
       # Two opt-in restore skips (-if-db-not-exists when the output exists,
