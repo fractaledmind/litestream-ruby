@@ -86,7 +86,7 @@ jobs:
 
   darwin-x86_64-install:
     needs: ["package"]
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - uses: ruby/setup-ruby@v1
         with:
