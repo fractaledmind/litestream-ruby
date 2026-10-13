@@ -873,3 +873,29 @@ class TestCommands < ActiveSupport::TestCase
     end
   end
 end
+
+class TestReplicateProcess < ActiveSupport::TestCase
+  def test_async_replicate_returns_the_pid_of_the_litestream_process
+    Dir.mktmpdir do |dir|
+      executable = File.join(dir, "litestream")
+      pid_file = File.join(dir, "pid")
+      # Exits cleanly on INT like the real daemon, so Process.wait leaves a
+      # normal exit status behind for tests that read $? after a stubbed command.
+      File.write(executable, "#!/bin/sh\ntrap 'exit 0' INT TERM\necho $$ > #{pid_file}\nwhile :; do sleep 1; done\n")
+      File.chmod(0o755, executable)
+
+      Litestream::Commands.stub :executable, executable do
+        pid = Litestream::Commands.replicate(async: true)
+        sleep 0.2 until File.exist?(pid_file) && !File.read(pid_file).strip.empty?
+
+        assert_equal File.read(pid_file).to_i, pid
+      ensure
+        if pid
+          Process.kill(:INT, pid)
+          Process.wait(pid)
+          assert_raises(Errno::ECHILD) { Process.wait(pid, Process::WNOHANG) }
+        end
+      end
+    end
+  end
+end

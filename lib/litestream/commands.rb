@@ -94,9 +94,9 @@ module Litestream
         exe_file
       end
 
-      # Replicate can be run either as a fork or in the same process, depending on the context.
-      # Puma will start replication as a forked process, while running replication from a rake
-      # tasks won't.
+      # Replicate runs either as a child process or in the foreground, depending on the context.
+      # The Puma plugin starts it as a child and gets its pid back; the rake task runs it in the
+      # foreground and streams its output.
       def replicate(async: false, **argv)
         cmd = prepare("replicate", argv)
         run_replicate(cmd, async: async)
@@ -169,9 +169,16 @@ module Litestream
         rows.map { keys.zip(_1).to_h }
       end
 
+      # Async replication returns the pid of the litestream process itself so a
+      # supervisor can signal and wait on it. Process.spawn is fork-and-exec in
+      # one call, so the pid it returns is the one that becomes litestream. The
+      # previous `exec(*cmd) if fork.nil?` also execs in a child but returns
+      # into the parent too, and the Puma plugin wrapped that in a fork of its
+      # own, so it recorded a pid that exited immediately while the daemon was
+      # reparented to init and outlived Puma.
       def run_replicate(cmd, async:)
         if async
-          exec(*cmd) if fork.nil?
+          Process.spawn(*cmd)
         else
           # When running in-process, we capture output continuously and write to stdout.
           IO.popen(cmd, err: [:child, :out]) do |io|
