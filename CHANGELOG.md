@@ -1,8 +1,12 @@
 ## [Unreleased]
 
-- Run Litestream commands without a shell and raise on command failures and timeouts.
-- Support parsed JSON output from Litestream 0.5 commands with `json: true`.
-- The Puma plugin holds the pid of the litestream process itself, so stopping Puma stops replication instead of leaving the daemon running.
+## [0.15.0] - 2026-10-13
+
+- Run Litestream commands without a shell, so arguments with spaces stay intact, and raise `Litestream::Commands::CommandFailedException` when a command exits non-zero instead of returning empty output; add `timeout:` and, for Litestream 0.5, `json: true` ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/76))
+- Stop replication when Puma stops: the Puma plugin holds the pid of the litestream process itself ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/77))
+- Find the replicate process on Alpine and on images without `ps` by reading `/proc` on Linux ([@jherdman](https://github.com/fractaledmind/litestream-ruby/pull/68))
+- Render the dashboard in the engine's own layout when the base controller declares one ([@fcatuhe](https://github.com/fractaledmind/litestream-ruby/pull/72))
+- Raise the timeout error, not `Errno::EPERM`, when a command times out on macOS ([@fractaledmind](https://github.com/fractaledmind/litestream-ruby/pull/80))
 
 ## [0.14.0] - 2025-06-14
 
