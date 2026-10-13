@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+- Bundle Litestream 0.5.17 release archives and verify their SHA-256 checksums during packaging.
+- Replace the removed `generations`, `snapshots`, and `wal` wrappers and rake tasks with `ltx` and `status`.
+- Use daemon-free `databases`, `status`, and `ltx` calls for dashboard data.
+- Show local status and LTX files in the dashboard.
+- Generate Litestream 0.5 configuration with a single replica and global snapshot settings.
+- Document restoration and migration from Litestream 0.3 backups.
+
 ## [0.15.0] - 2026-10-13
 
 - Run Litestream commands without a shell, so arguments with spaces stay intact, and raise `Litestream::Commands::CommandFailedException` when a command exits non-zero instead of returning empty output; add `timeout:` and, for Litestream 0.5, `json: true` ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/76))

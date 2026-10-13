@@ -124,22 +124,30 @@ module Litestream
         execute("databases", argv)
       end
 
-      def generations(database, **argv)
-        raise DatabaseRequiredException, "database argument is required for generations command, e.g. litestream:generations -- --database=path/to/database.sqlite" if database.nil?
+      def ltx(database, **argv)
+        raise DatabaseRequiredException, "database argument is required for ltx command, e.g. litestream:ltx -- --database=path/to/database.sqlite" if database.nil?
 
-        execute("generations", argv, database)
+        execute("ltx", argv, database)
       end
 
-      def snapshots(database, **argv)
-        raise DatabaseRequiredException, "database argument is required for snapshots command, e.g. litestream:snapshots -- --database=path/to/database.sqlite" if database.nil?
-
-        execute("snapshots", argv, database)
+      # Litestream 0.5 filters `status` by the absolute database path, while
+      # `ltx` and `restore` match the path as written in the config file, so a
+      # relative path is expanded here to keep the documented
+      # `--database=storage/production.sqlite3` form working.
+      def status(database = nil, **argv)
+        execute("status", argv, database && File.expand_path(database))
       end
 
-      def wal(database, **argv)
-        raise DatabaseRequiredException, "database argument is required for wal command, e.g. litestream:wal -- --database=path/to/database.sqlite" if database.nil?
+      def generations(*)
+        raise CommandFailedException, "`generations` was removed in Litestream 0.5; use `ltx` (see README, Upgrading from 0.3)"
+      end
 
-        execute("wal", argv, database)
+      def snapshots(*)
+        raise CommandFailedException, "`snapshots` was removed in Litestream 0.5; use `ltx` (see README, Upgrading from 0.3)"
+      end
+
+      def wal(*)
+        raise CommandFailedException, "`wal` was removed in Litestream 0.5; use `ltx` (see README, Upgrading from 0.3)"
       end
 
       private
@@ -232,8 +240,10 @@ module Litestream
         raise CommandFailedException, "Unexpected output from `#{cmd[1]}`: #{stdout.lines.first.to_s.strip[0, 200]}"
       end
 
+      # Litestream pads columns with at least two spaces, and some headers and
+      # values hold a single one ("local txid", "231 kB", "no database").
       def parse_table(stdout)
-        keys, *rows = stdout.strip.split("\n").map { _1.split(/\s+/) }
+        keys, *rows = stdout.strip.split("\n").map { _1.strip.split(/\s{2,}/) }
         return [] unless keys
 
         rows.map { keys.zip(_1).to_h }
