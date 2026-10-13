@@ -999,11 +999,15 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "argument with space\n", output
     end
 
+    # macOS scans a newly written executable on its first exec, which can take
+    # a few hundred milliseconds, so the timeout leaves room for the fake to start.
+    TIMEOUT = 1
+
     def test_timeout_kills_and_reaps_child
       pid_file = File.join(@tmpdir, "pid")
 
       assert_raises(Litestream::Commands::CommandTimeoutException) do
-        run_with_fake { Litestream::Commands.databases(**{"timeout" => 0.1, "--sleep" => pid_file}) }
+        run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep" => pid_file}) }
       end
 
       pid = wait_for_pid(pid_file)
@@ -1014,7 +1018,7 @@ class TestCommands < ActiveSupport::TestCase
       pid_file = File.join(@tmpdir, "pid")
 
       assert_raises(Litestream::Commands::CommandTimeoutException) do
-        run_with_fake { Litestream::Commands.databases(**{"timeout" => 0.1, "--sleep-in-child" => pid_file}) }
+        run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep-in-child" => pid_file}) }
       end
 
       pid = wait_for_pid(pid_file)
