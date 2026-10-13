@@ -65,12 +65,24 @@ namespace :litestream do
 
   private
 
+  # Options after `--` come as `-flag`, `-flag=value` or `-flag value`. Rake
+  # also reads a bare word there as one more task to run, so each value gets
+  # an empty task of its own to keep Rake from aborting once this one is done.
   def parse_argv_options
     options = {}
     if (separator_index = ARGV.index("--"))
-      ARGV.slice(separator_index + 1, ARGV.length)
-        .map { |pair| pair.split("=") }
-        .each { |opt| options[opt[0]] = opt[1] || nil }
+      awaiting_value = nil
+      ARGV.drop(separator_index + 1).each do |arg|
+        if arg.start_with?("-")
+          key, value = arg.split("=", 2)
+          options[key] = value
+          awaiting_value = value.nil? ? key : nil
+        elsif awaiting_value
+          options[awaiting_value] = arg
+          awaiting_value = nil
+          Rake::Task.define_task(arg)
+        end
+      end
     end
     options.symbolize_keys!
   end

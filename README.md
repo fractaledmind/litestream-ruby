@@ -132,6 +132,28 @@ end
 
 However, if you need manual control over the Litestream configuration, you can edit the `config/litestream.yml` file. The full range of possible configurations are covered in Litestream's [configuration reference](https://litestream.io/reference/config/).  
 
+#### Logging
+
+Litestream writes its logs to stdout, where they mix with your application's. Its `logging:` block can make them easy to separate, for example as JSON on stderr:
+
+```yaml
+logging:
+  level: info
+  type: json
+  stderr: true
+```
+
+#### Replicas that authenticate with a credentials file
+
+Some replica types read credentials from a file. Google Cloud Storage, for example, reads the path in `GOOGLE_APPLICATION_CREDENTIALS`. A file on your machine is not in the container that Kamal deploys, so pass its contents as a secret and write it out before the app starts, for example in `bin/docker-entrypoint`:
+
+```shell
+# .kamal/secrets: GCS_CREDENTIALS_JSON=$(cat config/gcs.json)
+# config/deploy.yml: env: { secret: [GCS_CREDENTIALS_JSON] }
+printf '%s' "$GCS_CREDENTIALS_JSON" > /rails/tmp/gcs.json
+export GOOGLE_APPLICATION_CREDENTIALS=/rails/tmp/gcs.json
+```
+
 ### Replication
 
 In order to stream changes to your configured replicas, you need to start the Litestream replication process.
