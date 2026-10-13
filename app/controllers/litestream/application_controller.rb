@@ -1,5 +1,7 @@
 module Litestream
   class ApplicationController < Litestream.base_controller_class.constantize
+    layout "litestream/application"
+
     protect_from_forgery with: :exception
 
     if Litestream.password
