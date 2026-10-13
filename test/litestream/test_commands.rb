@@ -680,22 +680,41 @@ class TestCommands < ActiveSupport::TestCase
       assert_equal "argument with space\n", output
     end
 
+    # macOS scans a newly written executable on its first exec, which can take
+    # a few hundred milliseconds, so the timeout leaves room for the fake to start.
+    TIMEOUT = 1
+
     def test_timeout_kills_and_reaps_child
       pid_file = File.join(@tmpdir, "pid")
 
       assert_raises(Litestream::Commands::CommandTimeoutException) do
-        run_with_fake { Litestream::Commands.databases(**{"timeout" => 0.1, "--sleep" => pid_file}) }
+        run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep" => pid_file}) }
       end
 
       pid = wait_for_pid(pid_file)
       assert_raises(Errno::ECHILD) { Process.wait(pid, Process::WNOHANG) }
     end
 
+    def test_timeout_raises_timeout_when_the_group_holds_only_unreaped_processes
+      pid_file = File.join(@tmpdir, "pid")
+      kill = Process.method(:kill)
+      killpg_as_macos_does_for_zombies = proc do |signal, pid|
+        raise Errno::EPERM if pid.negative? && signal == "KILL"
+        kill.call(signal, pid)
+      end
+
+      Process.stub :kill, killpg_as_macos_does_for_zombies do
+        assert_raises(Litestream::Commands::CommandTimeoutException) do
+          run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep" => pid_file}) }
+        end
+      end
+    end
+
     def test_timeout_kills_a_descendant_that_outlives_the_direct_child
       pid_file = File.join(@tmpdir, "pid")
 
       assert_raises(Litestream::Commands::CommandTimeoutException) do
-        run_with_fake { Litestream::Commands.databases(**{"timeout" => 0.1, "--sleep-in-child" => pid_file}) }
+        run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep-in-child" => pid_file}) }
       end
 
       pid = wait_for_pid(pid_file)
@@ -768,6 +787,32 @@ class TestCommands < ActiveSupport::TestCase
       replica_pos = lines[0].index("replica")
       assert_equal replica_pos, lines[1].index("s3")
       assert_equal replica_pos, lines[2].index("s3")
+    end
+  end
+end
+
+class TestReplicateProcess < ActiveSupport::TestCase
+  def test_async_replicate_returns_the_pid_of_the_litestream_process
+    Dir.mktmpdir do |dir|
+      executable = File.join(dir, "litestream")
+      pid_file = File.join(dir, "pid")
+      # Exits cleanly on INT like the real daemon, so Process.wait leaves a
+      # normal exit status behind for tests that read $? after a stubbed command.
+      File.write(executable, "#!/bin/sh\ntrap 'exit 0' INT TERM\necho $$ > #{pid_file}\nwhile :; do sleep 1; done\n")
+      File.chmod(0o755, executable)
+
+      Litestream::Commands.stub :executable, executable do
+        pid = Litestream::Commands.replicate(async: true)
+        sleep 0.2 until File.exist?(pid_file) && !File.read(pid_file).strip.empty?
+
+        assert_equal File.read(pid_file).to_i, pid
+      ensure
+        if pid
+          Process.kill(:INT, pid)
+          Process.wait(pid)
+          assert_raises(Errno::ECHILD) { Process.wait(pid, Process::WNOHANG) }
+        end
+      end
     end
   end
 end

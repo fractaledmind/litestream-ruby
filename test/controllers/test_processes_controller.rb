@@ -16,6 +16,7 @@ class Litestream::TestProcessesController < ActionDispatch::IntegrationTest
       Litestream.stub :databases, stubbed_databases do
         get litestream.process_url
         assert_response :success
+        assert_select "title", "Litestream"
 
         assert_select "#process_12345", 1 do
           assert_select "small", "sleeping"
