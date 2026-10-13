@@ -2,17 +2,13 @@ require "puma/plugin"
 
 # Copied from https://github.com/rails/solid_queue/blob/15408647f1780033dad223d3198761ea2e1e983e/lib/puma/plugin/solid_queue.rb
 Puma::Plugin.create do
-  attr_reader :puma_pid, :litestream_pid, :log_writer
+  attr_reader :litestream_pid, :log_writer
 
   def start(launcher)
     @log_writer = launcher.log_writer
-    @puma_pid = $$
 
     launcher.events.on_booted do
-      @litestream_pid = fork do
-        Thread.new { monitor_puma }
-        Litestream::Commands.replicate(async: true)
-      end
+      @litestream_pid = Litestream::Commands.replicate(async: true)
 
       in_background do
         monitor_litestream
@@ -31,10 +27,6 @@ Puma::Plugin.create do
     Process.kill(:INT, litestream_pid) if litestream_pid
     Process.wait(litestream_pid)
   rescue Errno::ECHILD, Errno::ESRCH
-  end
-
-  def monitor_puma
-    monitor(:puma_dead?, "Detected Puma has gone away, stopping Litestream...")
   end
 
   def monitor_litestream
@@ -57,10 +49,6 @@ Puma::Plugin.create do
     false
   rescue Errno::ECHILD, Errno::ESRCH
     true
-  end
-
-  def puma_dead?
-    Process.ppid != puma_pid
   end
 
   def log(...)
