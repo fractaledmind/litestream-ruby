@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+- Run Litestream commands without a shell and raise on command failures and timeouts.
+- Support parsed JSON output from Litestream 0.5 commands with `json: true`.
+- The Puma plugin holds the pid of the litestream process itself, so stopping Puma stops replication instead of leaving the daemon running.
+
 ## [0.14.0] - 2025-06-14
 
 - Change async behaviour of replicate and other commands ([@hschne](https://github.com/fractaledmind/litestream-ruby/pull/62))
