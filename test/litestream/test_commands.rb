@@ -1014,6 +1014,21 @@ class TestCommands < ActiveSupport::TestCase
       assert_raises(Errno::ECHILD) { Process.wait(pid, Process::WNOHANG) }
     end
 
+    def test_timeout_raises_timeout_when_the_group_holds_only_unreaped_processes
+      pid_file = File.join(@tmpdir, "pid")
+      kill = Process.method(:kill)
+      killpg_as_macos_does_for_zombies = proc do |signal, pid|
+        raise Errno::EPERM if pid.negative? && signal == "KILL"
+        kill.call(signal, pid)
+      end
+
+      Process.stub :kill, killpg_as_macos_does_for_zombies do
+        assert_raises(Litestream::Commands::CommandTimeoutException) do
+          run_with_fake { Litestream::Commands.databases(**{"timeout" => TIMEOUT, "--sleep" => pid_file}) }
+        end
+      end
+    end
+
     def test_timeout_kills_a_descendant_that_outlives_the_direct_child
       pid_file = File.join(@tmpdir, "pid")
 
