@@ -503,6 +503,20 @@ The removed `generations`, `snapshots`, and `wal` command methods and rake tasks
 
 The 0.5 `restore` command auto-detects both 0.3 and LTX backups and prefers whichever backup is newer. Existing 0.3 `generations/` objects are left in place; you can delete them after the LTX history covers your full retention window. To roll back, reinstall a 0.15.x release of this gem, which bundles Litestream 0.3.
 
+### Known issues with Litestream 0.5.17
+
+These were found running 0.5.17 in production (see [#84](https://github.com/fractaledmind/litestream-ruby/issues/84)):
+
+- **Deploy overlap.** Litestream 0.5.17 takes no lock on the database it replicates. When a deploy starts the new container before stopping the old one, as Kamal does, both run `litestream replicate` against the same database until the old one stops. This can upload a corrupt LTX file. A lock in this gem is planned.
+- **Stalled compaction.** A corrupt LTX file at level 0 makes every compaction that includes it fail, without any error your app would see, and level-0 files then pile up. Keep an eye on the count, for example from a recurring job:
+
+  ```ruby
+  Litestream::Commands.ltx("storage/production.sqlite3", json: true, "--level" => "0").size
+  ```
+
+  A count that keeps growing means compaction is stuck.
+- **Connection leak.** While compactions keep failing, Litestream 0.5.17 leaks a connection on each attempt, which can exhaust a host's network memory. This is fixed upstream ([benbjohnson/litestream#1500](https://github.com/benbjohnson/litestream/pull/1500)) but not yet released. This gem will move to the first Litestream release that includes the fix.
+
 ### Using in development
 
 By default, if you install the gem and configure via `puma.rb` or `Procfile`, Litestream will not start in development.
