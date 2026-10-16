@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Document Litestream 0.5.17's known issues: deploy overlap, stalled compaction and a connection leak, and how to watch for a stall.
 - The Puma plugin stops Puma when Litestream exits, as documented. The monitor was registered from the booted callback, after Puma had already started its background threads, so it never ran (same fix as rails/solid_queue@5d200d0).
 
 ## [0.16.0] - 2026-10-13
