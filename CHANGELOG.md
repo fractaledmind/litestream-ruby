@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Wait for a lock for each database before replicating, so a deploy overlap no longer runs two `litestream replicate` processes on one database (#84); with `-exec`, the command now starts only once the lock is free ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/88))
+
 ## [0.16.1] - 2026-10-16
 
 - Stop Puma when Litestream exits, as documented: the Puma plugin's monitor was set up after Puma had started its background threads, so it never ran ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/85))

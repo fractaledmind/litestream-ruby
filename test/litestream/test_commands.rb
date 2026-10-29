@@ -813,6 +813,8 @@ class TestReplicateProcess < ActiveSupport::TestCase
       # normal exit status behind for tests that read $? after a stubbed command.
       File.write(executable, "#!/bin/sh\ntrap 'exit 0' INT TERM\necho $$ > #{pid_file}\nwhile :; do sleep 1; done\n")
       File.chmod(0o755, executable)
+      Litestream.config_path = File.join(dir, "litestream.yml")
+      File.write(Litestream.config_path, "dbs:\n  - path: #{dir}/test.sqlite3\n")
 
       Litestream::Commands.stub :executable, executable do
         pid = Litestream::Commands.replicate(async: true)
@@ -825,6 +827,7 @@ class TestReplicateProcess < ActiveSupport::TestCase
           Process.wait(pid)
           assert_raises(Errno::ECHILD) { Process.wait(pid, Process::WNOHANG) }
         end
+        Litestream.config_path = nil
       end
     end
   end

@@ -185,6 +185,8 @@ bin/rails litestream:replicate -- -exec "foreman start"
 
 This example utilizes the `-exec` option available on [the `replicate` command](https://litestream.io/reference/replicate/) which provides basic process management, since Litestream will exit when the child process exits. In this example, we only launch our collection of Rails application processes (like Rails and SolidQueue, for example) after the Litestream replication process is ready.
 
+Both the Puma plugin and `litestream:replicate` first wait for an exclusive lock for each database in your config, so that a deploy that starts the new container before stopping the old one never runs two replication processes on one database ([#84](https://github.com/fractaledmind/litestream-ruby/issues/84)). The lock is `.<db>-litestream.lock` beside each database (or its `meta-path:`), or `.litestream.lock` inside a `dir:` entry's directory, and Litestream holds it until it exits. With `-exec`, your command now starts only once the lock is free, so under Kamal don't start a web role this way: use the Puma plugin, or run `litestream:replicate` as a role of its own.
+
 The Litestream `replicate` command supports the following options, which can be passed through the rake task:
 
 ```shell
@@ -507,7 +509,7 @@ The 0.5 `restore` command auto-detects both 0.3 and LTX backups and prefers whic
 
 These were found running 0.5.17 in production (see [#84](https://github.com/fractaledmind/litestream-ruby/issues/84)):
 
-- **Deploy overlap.** Litestream 0.5.17 takes no lock on the database it replicates. When a deploy starts the new container before stopping the old one, as Kamal does, both run `litestream replicate` against the same database until the old one stops. This can upload a corrupt LTX file. A lock in this gem is planned.
+- **Deploy overlap.** Litestream 0.5.17 takes no lock on the database it replicates. When a deploy starts the new container before stopping the old one, as Kamal does, both run `litestream replicate` against the same database until the old one stops. This can upload a corrupt LTX file. The Puma plugin and `litestream:replicate` wait for a lock to prevent this (see Replication).
 - **Stalled compaction.** A corrupt LTX file at level 0 makes every compaction that includes it fail, without any error your app would see, and level-0 files then pile up. Keep an eye on the count, for example from a recurring job:
 
   ```ruby

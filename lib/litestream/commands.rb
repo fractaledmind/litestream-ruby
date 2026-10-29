@@ -1,5 +1,8 @@
+require "date"
 require "json"
 require "open3"
+require "rbconfig"
+require "yaml"
 require_relative "upstream"
 
 module Litestream
@@ -256,7 +259,14 @@ module Litestream
       # into the parent too, and the Puma plugin wrapped that in a fork of its
       # own, so it recorded a pid that exited immediately while the daemon was
       # reparented to init and outlived Puma.
+      #
+      # Litestream 0.5.17 takes no lock on the database it replicates, so two
+      # replicators can run on one database during a deploy overlap and upload
+      # a corrupt LTX file (#84). A small script waits for a lock for each
+      # database and then execs litestream, which holds the locks until it exits.
       def run_replicate(cmd, async:)
+        locks = lock_paths(cmd)
+        cmd = [RbConfig.ruby, File.join(__dir__, "lock_and_exec.rb"), *locks, "--", *cmd] if locks.any?
         if async
           Process.spawn(*cmd)
         else
@@ -273,6 +283,35 @@ module Litestream
             raise CommandFailedException, "Failed to execute `replicate` (exit status #{status.exitstatus})"
           end
         end
+      end
+
+      # Litestream 0.5.17's `databases` reports a `dir:` entry as the working
+      # directory, so the config file is read here. Each lock sits where
+      # Litestream keeps that database's state: `.<db>-litestream.lock` beside
+      # the database (or its meta-path), or `.litestream.lock` in a `dir:`.
+      def lock_paths(cmd)
+        flag = cmd.index { %w[--config -config].include?(_1) }
+        config_path = cmd[flag + 1] if flag
+        return [] unless config_path && File.file?(config_path)
+
+        yaml = File.read(config_path)
+        yaml = yaml.gsub(/\$\{?(\w+)\}?/) { ENV.fetch($1, "") } if (cmd & %w[--no-expand-env -no-expand-env]).empty?
+        config = YAML.safe_load(yaml, permitted_classes: [Date, Time, Symbol], aliases: true)
+        Array(config&.dig("dbs")).filter_map do |db|
+          next unless db.is_a?(Hash)
+          if db["dir"]
+            File.join(expand(db["meta-dir"] || db["meta-path"] || db["dir"]), ".litestream.lock")
+          elsif db["meta-path"]
+            "#{expand(db["meta-path"])}.lock"
+          elsif db["path"]
+            path = expand(db["path"])
+            File.join(File.dirname(path), ".#{File.basename(path)}-litestream.lock")
+          end
+        end.uniq.sort
+      end
+
+      def expand(path)
+        File.expand_path(path.to_s.delete_prefix("sqlite3://").delete_prefix("sqlite://"))
       end
     end
   end
