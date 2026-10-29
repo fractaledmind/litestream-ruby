@@ -107,11 +107,13 @@ module Litestream
       # foreground and streams its output.
       def replicate(async: false, **argv)
         cmd = prepare("replicate", argv)
-        run_replicate(cmd, async: async)
-      rescue CommandFailedException
-        raise
-      rescue
-        raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`"
+        begin
+          run_replicate(cmd, async: async)
+        rescue CommandFailedException
+          raise
+        rescue => error
+          raise CommandFailedException, "Failed to execute `#{cmd.join(" ")}`: #{error.message}"
+        end
       end
 
       def restore(database, **argv)

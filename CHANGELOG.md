@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Raise the error that keeps `replicate` from starting, such as a missing executable or `LITESTREAM_INSTALL_DIR`, instead of a `NoMethodError`, and say why spawning it failed ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/87))
+
 ## [0.16.1] - 2026-10-16
 
 - Stop Puma when Litestream exits, as documented: the Puma plugin's monitor was set up after Puma had started its background threads, so it never ran ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/85))

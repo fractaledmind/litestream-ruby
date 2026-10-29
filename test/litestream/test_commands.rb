@@ -829,3 +829,33 @@ class TestReplicateProcess < ActiveSupport::TestCase
     end
   end
 end
+
+class TestReplicateErrors < ActiveSupport::TestCase
+  def teardown
+    ENV.delete("LITESTREAM_INSTALL_DIR")
+  end
+
+  def test_a_missing_install_dir_raises_its_own_error
+    ENV["LITESTREAM_INSTALL_DIR"] = "/nonexistent"
+
+    assert_raises(Litestream::Commands::DirectoryNotFoundException) { Litestream::Commands.replicate(async: true) }
+  end
+
+  def test_a_missing_executable_raises_its_own_error
+    Dir.mktmpdir do |dir|
+      ENV["LITESTREAM_INSTALL_DIR"] = dir
+
+      capture_io do
+        assert_raises(Litestream::Commands::ExecutableNotFoundException) { Litestream::Commands.replicate(async: true) }
+      end
+    end
+  end
+
+  def test_a_failed_spawn_says_why
+    error = Litestream::Commands.stub :executable, "/nonexistent/litestream" do
+      assert_raises(Litestream::Commands::CommandFailedException) { Litestream::Commands.replicate(async: true) }
+    end
+
+    assert_match "No such file or directory", error.message
+  end
+end
