@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Keep Puma running through a phased restart: the Puma plugin's monitor took the Litestream it had just stopped for one that died, and stopped Puma before the workers had booted again ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/90))
+
 ## [0.16.1] - 2026-10-16
 
 - Stop Puma when Litestream exits, as documented: the Puma plugin's monitor was set up after Puma had started its background threads, so it never ran ([@cole-robertson](https://github.com/fractaledmind/litestream-ruby/pull/85))

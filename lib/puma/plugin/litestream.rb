@@ -21,11 +21,17 @@ Puma::Plugin.create do
 
   private
 
+  # Clears the pid first: a phased restart fires restart, then booted only
+  # once every worker is back, and meanwhile the monitor must not take the
+  # pid stopped here for Litestream dying.
   def stop_litestream
-    Process.waitpid(litestream_pid, Process::WNOHANG)
+    pid, @litestream_pid = litestream_pid, nil
+    return unless pid
+
+    Process.waitpid(pid, Process::WNOHANG)
     log_writer.log "Stopping Litestream..."
-    Process.kill(:INT, litestream_pid) if litestream_pid
-    Process.wait(litestream_pid)
+    Process.kill(:INT, pid)
+    Process.wait(pid)
   rescue Errno::ECHILD, Errno::ESRCH
   end
 
